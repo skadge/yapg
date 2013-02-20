@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import time
+from itertools import imap
 
 from cgi import escape
 import sys, os
@@ -18,12 +19,10 @@ PHOTOS_BASE = "media/photos/"
 visited_path = []
 
 env = Environment(loader=PackageLoader('gallery', 'tpl'))
+tpl = env.get_template('gallery.tpl')
 items_tpl = env.get_template('photo_items.tpl')
 
 def make_gallery(path, options):
-
-
-    starttime = time.time()
 
     content = ""
     fullpath= PHOTOS_BASE + path
@@ -38,10 +37,6 @@ def make_gallery(path, options):
 
     print("Building gallery with pictures %d to %d in %s" % (start, end, fullpath))
 
-
-
-    tpl = env.get_template('gallery.tpl')
-
     imgs = list_images(path)
 
     if start != 0:
@@ -52,15 +47,11 @@ def make_gallery(path, options):
             end = len(imgs)
 
         print("Sending %d images" % (end - start))
-        content = str(items_tpl.render(imgs = list_images(path)[start:end]))
+        return imap(str, items_tpl.generate(imgs = list_images(path)[start:end]))
 
     else:
         print("Sending gallery with %d images" % (end - start))
-        return tpl.generate(title = path, path = path, imgs = list_images(path)[start:end], counter = end)
-
-
-    print("Spent %.2fs in make_gallery." % (time.time() - starttime))
-    return content
+        return imap(str, tpl.generate(title = path, path = path, imgs = list_images(path)[start:end], counter = end))
 
 
 def app(environ, start_response):
