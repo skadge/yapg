@@ -39,7 +39,7 @@ def make_gallery(path, options):
 
     imgs = list_images(path)
 
-    if start != 0:
+    if end - start != 0:
         if start >= len(imgs):
             print("No more images")
             return ""
@@ -50,8 +50,9 @@ def make_gallery(path, options):
         return imap(str, items_tpl.generate(imgs = list_images(path)[start:end]))
 
     else:
+        dirs = ["Maud", "toto"]
         print("Sending gallery with %d images" % (end - start))
-        return imap(str, tpl.generate(title = path, path = path, imgs = list_images(path)[start:end], counter = end))
+        return imap(str, tpl.generate(title = path, path = path, dirs = dirs, imgs = list_images(path)[start:end], counter = end))
 
 
 def app(environ, start_response):

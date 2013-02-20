@@ -1,5 +1,4 @@
 @import "https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700";
-
 body {
     color: #ccc;
     font: 300 14px/1.5 Lato,"Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -7,10 +6,41 @@ body {
     background-color: #000;
 }
 
+a {
+    text-decoration: none;
+    color: #ccc;
+}
+
+
 h1 {
     color: #eee;
     font-size: 40px;
 }
+
+#directories a {
+    display: block;
+    font-size:30px;
+    font-weight: bolder;
+    margin:5px;
+    background-color: #111;
+    opacity: 0.5;
+    padding-left:15px;
+}
+
+#directories a:hover {
+    text-shadow: 0 0 5px #fff;
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+    -webkit-transition: opacity 0.2s ease-in-out;
+    -moz-transition: opacity 0.2s ease-in-out;
+    -o-transition: opacity 0.2s ease-in-out;
+}
+
+
+#directories a:before {
+    content:"> ";
+}
+
 
 #gallery {
     /*background-color: #fff;*/

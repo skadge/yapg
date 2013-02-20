@@ -13,6 +13,12 @@
 
 <h1>{{ title }}</h1>
 
+<div id="directories">
+    {% for d in dirs %}
+    <a href="{{ d }}">{{ d }}</a>
+    {% endfor %}
+</div>
+
 <div id="gallery">
 
 {% include 'photo_items.tpl' %}
