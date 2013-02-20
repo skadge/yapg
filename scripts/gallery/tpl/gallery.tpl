@@ -65,7 +65,7 @@ function get_more() {
 
 $(window).scroll(function(){
         if  (!loading && !nomoreimages &&
-             $(window).scrollTop() == $(document).height() - $(window).height()){
+             $(window).scrollTop() > $(document).height() - $(window).height() - 300){
             loading = true;
             $('#spinner').animate({ opacity: 1 });
             get_more();
