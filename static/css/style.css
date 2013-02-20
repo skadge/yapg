@@ -1,0 +1,48 @@
+@import "https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700";
+
+body {
+    color: #ccc;
+    font: 300 14px/1.5 Lato,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    padding: 0 15%;
+    background-color: #000;
+}
+
+h1 {
+    color: #eee;
+    font-size: 40px;
+}
+
+#gallery {
+    /*background-color: #fff;*/
+
+}
+.photo img {
+    /*box-shadow: 0px 0px 5px 5px #ccc;*/
+}
+
+.photo:hover {
+    transform:rotate(-1deg) scale(1.1);
+    -moz-transform:rotate(-1deg) scale(1.1); /* Firefox 4 */
+    -webkit-transform:rotate(-1deg) scale(1.1); /* Safari and Chrome */
+    -o-transform:rotate(-1deg) scale(1.1); /* Opera */
+}
+
+.photo {
+    transition: all 0.2s;
+    -moz-transition: all 0.2s; /* Firefox 4 */
+    -webkit-transition: all 0.2s; /* Safari and Chrome */
+    -o-transition: all 0.2s; /* Opera */
+    /*width: 200px;*/
+    margin: 5px;
+    float: left;
+}
+
+#spinner {
+   background-image: url('/images/spinner.gif');
+   position: fixed;
+   bottom: 20px;
+   left: 20px;
+   height: 66px;
+   width: 66px;
+   opacity:0;
+}
