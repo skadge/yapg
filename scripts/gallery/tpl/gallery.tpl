@@ -11,7 +11,7 @@
 
 <body>
 
-<h1>{{ title }}</h1>
+<h1><a href="/">{{ title }}</a></h1>
 
 <div id="directories">
     {% for d in dirs %}
