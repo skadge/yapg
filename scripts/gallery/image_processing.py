@@ -202,6 +202,16 @@ def create_thumbnails(directory, to = None):
     except OSError:
         pass
 
+    small_path = directory + SMALL_DIR
+    print("Storing small versions in <%s>..." % small_path)
+    try:
+        os.mkdir(_abspath(small_path))
+        print("Creating it...")
+
+    except OSError:
+        pass
+
+
     path = _abspath(directory)
 
     imgs = [os.path.join(directory, f) for f in os.listdir(path) if os.path.splitext(f)[1][1:] in EXTENSIONS]
