@@ -190,6 +190,9 @@ def create_thumbnails(directory, to = None):
     """
     global thumbs_path, images
 
+    if not directory.endswith("/"):
+        directory += "/"
+
     if to:
         thumbs_path = to
 

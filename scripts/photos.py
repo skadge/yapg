@@ -59,7 +59,7 @@ def app(environ, start_response):
 
     start_response('200 OK', [('Content-Type', 'text/html')])
 
-    path = environ["PATH_INFO"] + "/"
+    path = environ["PATH_INFO"]
 
     options = urlparse.parse_qs(environ["QUERY_STRING"])
 
