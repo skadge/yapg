@@ -105,7 +105,7 @@ class GuakamoleImage:
 
 
         print("No EXIF date. Using file creation date instead.")
-        return datetime.datetime.fromtimestamp(os.path.getctime(self.path)).strftime("%Y-%m-%d-%H-%M-%S")
+        return datetime.datetime.fromtimestamp(os.path.getctime(self.abspath)).strftime("%Y-%m-%d-%H-%M-%S")
 
 
     def _clear_old_thumbs(self):
