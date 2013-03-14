@@ -2,20 +2,29 @@
 
 <html>
 <head>
+    <meta charset="utf-8" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="/js/jquery.masonry.min.js"></script>
     <script src="/js/lightbox.js"></script>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/lightbox.css" />
+    <title>Guakamole : Fotos Y Takos</title>
 </head>
 
 <body>
 
-<h1><a href="/">{{ title }}</a></h1>
+<div id="header">
+    <h1><a href="/"><img alt="Retour à la page d'accueil" src="/images/maison.svg" /></a>
+    {% for part in title[0] %}
+    &gt; <a href={{ "/" + part }}>{{part}}</a>
+    {% endfor %}
+    &gt; {{title[1]}}
+    </h1>
+</div>
 
 <div id="directories">
     {% for d in dirs %}
-    <a href="{{ d }}">{{ d }}</a>
+    <a href="{{ d[1] }}">{{ d[0] }}</a>
     {% endfor %}
 </div>
 

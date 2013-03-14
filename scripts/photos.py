@@ -12,15 +12,18 @@ from jinja2 import Environment, PackageLoader
 
 from gallery.image_processing import *
 
-MEDIA_BASE = "media/"
+MEDIA_BASE = u'media/'
 
-PHOTOS_BASE = "media/photos/"
+PHOTOS_BASE = u'media/photos/'
 
 visited_path = []
 
 env = Environment(loader=PackageLoader('gallery', 'tpl'))
 tpl = env.get_template('gallery.tpl')
 items_tpl = env.get_template('photo_items.tpl')
+
+def fixencoding(s):
+    return s.encode("utf-8")
 
 def make_gallery(path, options):
 
@@ -37,7 +40,7 @@ def make_gallery(path, options):
 
     print("Building gallery with pictures %d to %d in %s" % (start, end, fullpath))
 
-    imgs = list_images(path)
+    imgs = list_images(fullpath)
 
     if end - start != 0:
         if start >= len(imgs):
@@ -47,19 +50,28 @@ def make_gallery(path, options):
             end = len(imgs)
 
         print("Sending %d images" % (end - start))
-        return imap(str, items_tpl.generate(imgs = list_images(path)[start:end]))
+        return imap(fixencoding, items_tpl.generate(imgs = imgs[start:end]))
 
     else:
-        dirs = ["Maud", "toto"]
-        print("Sending gallery with %d images" % (end - start))
-        return imap(str, tpl.generate(title = path, path = path, dirs = dirs, imgs = list_images(path)[start:end], counter = end))
+
+        dirs = []
+        for dirname, dirnames, filenames in os.walk(STATIC_ROOT + PHOTOS_BASE + path, followlinks = True):
+            # print path to all subdirectories first.
+            for subdirname in dirnames:
+                if subdirname[0] not in ['.', '_']:
+                    dirs.append((subdirname, os.path.join(path, subdirname)))
+
+        title = (path.split("/")[1:-1], path.split("/")[-1])
+        print("Sending base gallery")
+        #import pdb;pdb.set_trace()
+        return imap(fixencoding, tpl.generate(title = title, path = path, dirs = dirs, imgs = imgs[start:end], counter = end))
 
 
 def app(environ, start_response):
 
     start_response('200 OK', [('Content-Type', 'text/html')])
 
-    path = environ["PATH_INFO"]
+    path = environ["PATH_INFO"].decode("utf-8")
 
     options = urlparse.parse_qs(environ["QUERY_STRING"])
 
