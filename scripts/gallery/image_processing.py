@@ -77,17 +77,17 @@ class GuakamoleImage:
 
     # comparing on thumbs name to get the creation date in!
     def __eq__(self, other):
-        self.date == other.date
+        return self.date == other.date
     def __ne__(self, other):
-        self.date != other.date
+        return self.date != other.date
     def __lt__(self, other):
-        self.date < other.date
+        return self.date < other.date
     def __le__(self, other):
-        self.date <= other.date
+        return self.date <= other.date
     def __gt__(self, other):
-        self.date > other.date
+        return self.date > other.date
     def __ge__(self, other):
-        self.date >= other.date
+        return self.date >= other.date
 
     def _date(self):
         """ returns the date of the picture, as a string suitable for inclusion in the file name.
