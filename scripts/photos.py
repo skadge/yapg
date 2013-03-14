@@ -54,12 +54,9 @@ def make_gallery(path, options):
 
     else:
 
-        dirs = []
-        for dirname, dirnames, filenames in os.walk(STATIC_ROOT + PHOTOS_BASE + path, followlinks = True):
-            # print path to all subdirectories first.
-            for subdirname in dirnames:
-                if subdirname[0] not in ['.', '_']:
-                    dirs.append((subdirname, os.path.join(path, subdirname)))
+        parentdir = STATIC_ROOT + PHOTOS_BASE + path
+        dirs_names = [ name for name in os.listdir(parentdir) if os.path.isdir(os.path.join(parentdir, name)) and name[0] not in ['.', '_']]
+        dirs = [ (name, os.path.join(path, name)) for name in dirs_names]
 
         title = (path.split("/")[1:-1], path.split("/")[-1])
         print("Sending base gallery")
