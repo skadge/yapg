@@ -13,11 +13,11 @@ UPSIDEDOWN = 3
 LEFT = 8
 RIGHT = 6
 
-STATIC_ROOT = "../static/"
+STATIC_ROOT = u"../static/"
 
-thumbs_path = "" # default to None -> original image dir
-THUMBS_DIR = "_thumbs/"
-SMALL_DIR = ".small/"
+thumbs_path = u"" # default to None -> original image dir
+THUMBS_DIR = u"_thumbs/"
+SMALL_DIR = u".small/"
 
 SMALL_SIZE = (1200, 800)
 
@@ -33,7 +33,7 @@ THUMBS_SIZE_HORZ = [(200, 100),
 
 EXTENSIONS = ["jpg", "JPG", "png", "PNG"]
 
-images = []
+images = {}
 
 def _abspath(path):
     return STATIC_ROOT + path
@@ -95,13 +95,10 @@ class GuakamoleImage:
         Tries first EXIF. If not available, uses creation timestamp.
         """
 
-        try:
-            exif = self.img._getexif()
-            if 36867 in exif: # exif -> DateTimeOriginal
-                return exif[36867].replace(":","-").replace(" ", "-")
+        exif = self.img._getexif()
+        if exif and 36867 in exif: # exif -> DateTimeOriginal
+            return exif[36867].replace(":","-").replace(" ", "-")
 
-        except AttributeError:
-            pass
 
 
         print("No EXIF date. Using file creation date instead.")
@@ -136,9 +133,9 @@ class GuakamoleImage:
 
     def _exif_rotate(self, img):
 
-        try:
-            exif = img._getexif()
-        except AttributeError:
+        exif = img._getexif()
+
+        if not exif:
             return img
 
         if 274 in exif: # 274 -> orientation
@@ -178,25 +175,29 @@ class GuakamoleImage:
 
         return img.crop(box)
 
+    def __repr__(self):
+        return "%s - %s" % (self.name.encode("utf-8"), self.date)
 
-def list_images(filt = None):
-        if not filt:
-            return images
-        else:
-            return [i for i in images if filt in i.path]
+
+def list_images(path):
+    
+    path = os.path.normpath(path)
+    if path not in images:
+        return []
+
+    return images[path]
 
 def create_thumbnails(directory, to = None):
     """ Generate thumbnails of a giving directory, and cache them in ./_thumbs
     """
     global thumbs_path, images
 
-    if not directory.endswith("/"):
-        directory += "/"
+    directory = os.path.normpath(directory)
 
     if to:
         thumbs_path = to
 
-    thumb_path = (thumbs_path or directory) + THUMBS_DIR
+    thumb_path = os.path.join(thumbs_path or directory, THUMBS_DIR)
     print("Storing thumbs in <%s>..." % thumb_path)
     try:
         os.mkdir(_abspath(thumb_path))
@@ -205,7 +206,7 @@ def create_thumbnails(directory, to = None):
     except OSError:
         pass
 
-    small_path = directory + SMALL_DIR
+    small_path = os.path.join(directory, SMALL_DIR)
     print("Storing small versions in <%s>..." % small_path)
     try:
         os.mkdir(_abspath(small_path))
@@ -217,11 +218,17 @@ def create_thumbnails(directory, to = None):
 
     path = _abspath(directory)
 
-    imgs = [os.path.join(directory, f) for f in os.listdir(path) if os.path.splitext(f)[1][1:] in EXTENSIONS]
-    lenimg = len(imgs)
+    imgs = []
+    files = [os.path.join(directory, f) for f in os.listdir(path) if os.path.splitext(f)[1][1:] in EXTENSIONS]
+    nb_imgs = len(files)
 
-    for index, img in enumerate(imgs):
-        print("Image %d/%d: %s" % (index + 1, lenimg, img))
-        images.append(GuakamoleImage(img))
+    for index, img in enumerate(files):
+        print("Image %d/%d: %s" % (index + 1, nb_imgs, img))
+        imgs.append(GuakamoleImage(img))
 
-    images.sort() #sorts over the creation dates!
+    imgs.sort() #sorts over the creation dates!
+
+    images[directory] = imgs
+
+
+
