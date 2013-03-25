@@ -16,7 +16,7 @@ MEDIA_BASE = u'media/'
 
 PHOTOS_BASE = u'media/photos/'
 
-visited_path = []
+visited_path = {}
 
 env = Environment(loader=PackageLoader('gallery', 'tpl'))
 tpl = env.get_template('gallery.tpl')
@@ -31,9 +31,10 @@ def make_gallery(path, options):
     fullpath= PHOTOS_BASE + path
 
 
-    if fullpath not in visited_path:
+    checksum = compute_checksum(fullpath) # compute a checksum of the path to detect changes
+    if (fullpath not in visited_path) or visited_path[fullpath] != checksum:
         create_thumbnails(fullpath, to = MEDIA_BASE)
-        visited_path.append(fullpath)
+        visited_path[fullpath] = checksum
 
     start = int(options.get("from", [0])[0])
     end = start + int(options.get("nb", [0])[0])

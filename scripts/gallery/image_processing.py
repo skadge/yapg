@@ -187,6 +187,14 @@ def list_images(path):
 
     return images[path]
 
+
+def compute_checksum(path):
+
+    path = _abspath(os.path.normpath(path))
+    files = tuple(f for f in os.listdir(path) if os.path.splitext(f)[1][1:] in EXTENSIONS)
+    return hash(files)
+
+
 def create_thumbnails(directory, to = None):
     """ Generate thumbnails of a giving directory, and cache them in ./_thumbs
     """
