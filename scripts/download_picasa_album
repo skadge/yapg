@@ -1,0 +1,108 @@
+#! /usr/bin/env python
+
+
+#!/usr/bin/python
+#
+# This interactive script prompts the user for an album to download.
+
+import sys
+import os
+import gdata.photos.service
+import urllib
+
+STATIC_PATH="../static/media/photos"
+albums = None
+
+prefix = ""
+
+def main():
+    "Downloads a Picasa Web Album of the user's choice to the current directory."
+    global albums, prefix
+
+    gd_client = gdata.photos.service.PhotosService()
+
+    if len(sys.argv) > 1:
+        username = sys.argv[1]
+        password = ""
+        if len(sys.argv) > 2:
+            password = sys.argv[2]
+    else:
+        username = raw_input("Username? ")            # Prompt for a Google account username.
+        password = raw_input("Pass? (leave empty to skip) ")            # Prompt for a Google account username.
+
+    prefix = raw_input("Prefix dir? (default: \"\"): ")
+    if password:
+        gd_client.ClientLogin(username, password)
+    
+    albums = gd_client.GetUserFeed(user = username)
+
+    if len(sys.argv) > 2:
+        album_id = sys.argv[2]
+    else:
+        #print_album_names(gd_client, username)        # Enumerate the albums owned by that account.
+        #album_id = raw_input("Album ID? ")            # Prompt for an album ID.
+        for album in albums.entry:
+            print 'Downloading %-30s (%3d photos) id = %s' % \
+            (album.title.text, int(album.numphotos.text), album.gphoto_id.text)
+
+
+            download_album(gd_client, username, album.gphoto_id.text) # Download the corresponding album!
+
+def print_album_names(gd_client, username):
+    "Enumerates the albums owned by USERNAME."
+
+    for album in albums.entry:
+        print '%-30s (%3d photos) id = %s' % \
+            (album.title.text, int(album.numphotos.text), album.gphoto_id.text)
+
+def download_album(gd_client, username, album_id):
+    "Downloads all the photos in the album ALBUM_ID owned by USERNAME."
+    album_name = ""
+    for album in albums.entry:
+        if album.gphoto_id.text == album_id:
+            album_name = album.title.text
+
+    photos = gd_client.GetFeed('/data/feed/api/user/%s/albumid/%s?kind=photo'
+                               % (username, album_id))
+    import pdb;pdb.set_trace()
+    for photo in photos.entry:
+        download_file(photo.content.src, album_name, photo.title.text, photo.summary.text)
+
+def make_unique(name):
+    if os.path.exists(name):
+        try:
+            nb = int(name[-6:-4])
+            name = name[:-9]
+
+        except ValueError:
+            nb = 0
+            name = name[:-4]
+
+        name = name + " - %02d.jpg" % (nb+1)
+        return make_unique(name)
+    else:
+        return name
+
+def download_file(url, album_name, title, desc):
+    "Download the data at URL to the current directory."
+
+    if desc:
+        title = "".join(c for c in desc if c not in ['/']).rstrip() + ".jpg"
+        title = title[:200] # prevent too long filenames!
+
+    path = os.path.join(STATIC_PATH, prefix, album_name)
+    try:
+        os.mkdir(path)
+    except OSError:
+        pass
+
+
+    name = os.path.join(path, title) 
+
+    name = make_unique(name) # Figure out a good name for the downloaded file.
+
+    print ("Downloading to %s" % name)
+    urllib.urlretrieve(url, name)
+
+if __name__ == '__main__':
+    main()
