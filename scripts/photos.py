@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+import logging; logger = logging.getLogger("main")
+FORMAT = '%(asctime)s - %(levelname)s: %(message)s'
+logging.basicConfig(format=FORMAT, level=logging.DEBUG)
+
 import time
 from itertools import imap
 
@@ -16,6 +20,7 @@ MEDIA_BASE = u'media/'
 
 PHOTOS_BASE = u'media/photos/'
 
+recent = []
 visited_path = {}
 
 env = Environment(loader=PackageLoader('gallery', 'tpl'))
@@ -39,18 +44,18 @@ def make_gallery(path, options):
     start = int(options.get("from", [0])[0])
     end = start + int(options.get("nb", [0])[0])
 
-    print("Building gallery with pictures %d to %d in %s" % (start, end, fullpath))
+    logger.info("Building gallery with pictures %d to %d in %s" % (start, end, fullpath))
 
     imgs = list_images(fullpath)
 
     if end - start != 0:
         if start >= len(imgs):
-            print("No more images")
+            logger.info("No more images")
             return ""
         if end > len(imgs):
             end = len(imgs)
 
-        print("Sending %d images" % (end - start))
+        logger.info("Sending %d images" % (end - start))
         return imap(fixencoding, items_tpl.generate(imgs = imgs[start:end]))
 
     else:
@@ -60,7 +65,7 @@ def make_gallery(path, options):
         dirs = [ (name, os.path.join(path, name)) for name in dirs_names]
 
         title = (path.split("/")[1:-1], path.split("/")[-1])
-        print("Sending base gallery")
+        logger.info("Sending base gallery")
         #import pdb;pdb.set_trace()
         return imap(fixencoding, tpl.generate(title = title, path = path, dirs = dirs, imgs = imgs[start:end], counter = end))
 
@@ -76,5 +81,5 @@ def app(environ, start_response):
 
     return make_gallery(path, options)
 
-print("Starting to serve...")
+logger.info("Starting to serve...")
 WSGIServer(app, bindAddress = ("127.0.0.1", 8080)).run()

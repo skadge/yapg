@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+import logging; logger = logging.getLogger("main")
 import os
 import copy
 import glob
@@ -55,7 +56,7 @@ class GuakamoleImage:
         self.img = Image.open(self.abspath)
 
         self.date = self._date()
-        print("%s created at %s" % (self.name, self.date))
+        logger.info("%s created at %s" % (self.name, self.date))
 
         self.thumbpath = (thumbs_path or (self.dirname + "/")) + THUMBS_DIR
         self.absthumbpath = _abspath(self.thumbpath)
@@ -101,19 +102,19 @@ class GuakamoleImage:
 
 
 
-        print("No EXIF date. Using file creation date instead.")
+        logger.warning("No EXIF date. Using file creation date instead.")
         return datetime.datetime.fromtimestamp(os.path.getctime(self.abspath)).strftime("%Y-%m-%d-%H-%M-%S")
 
 
     def _clear_old_thumbs(self):
-        print("TODO: clear old thumbs!!")
+        logger.debug("TODO: clear old thumbs!!")
 
     def _make_thumb(self):
 
         if os.path.exists(self.absthumb):
             return
 
-        print("...creating thumb %s for %s" % (self.thumb, self.path))
+        logger.info("...creating thumb %s for %s" % (self.thumb, self.path))
         self.img = self._exif_rotate(self.img)
 
         self._clear_old_thumbs()
@@ -124,7 +125,7 @@ class GuakamoleImage:
         if os.path.exists(self.abssmall):
             return
 
-        print("...creating small version of %s" % (self.name))
+        logger.info("...creating small version of %s" % (self.name))
 
         # rely on _make_thumb to rotate the image if necessary
         self.img.thumbnail(SMALL_SIZE, Image.ANTIALIAS)
@@ -141,13 +142,13 @@ class GuakamoleImage:
         if 274 in exif: # 274 -> orientation
             orientation = exif[274]
             if orientation == UPSIDEDOWN:
-                print("Rotating the picture 180°")
+                logger.info("Rotating the picture 180°")
                 return img.rotate(180, expand = True)
             if orientation == LEFT:
-                print("Rotating the picture 90°")
+                logger.info("Rotating the picture 90°")
                 return img.rotate(90, expand = True)
             if orientation == RIGHT:
-                print("Rotating the picture -90°")
+                logger.info("Rotating the picture -90°")
                 return img.rotate(-90, expand = True)
 
         return img
@@ -206,19 +207,19 @@ def create_thumbnails(directory, to = None):
         thumbs_path = to
 
     thumb_path = os.path.join(thumbs_path or directory, THUMBS_DIR)
-    print("Storing thumbs in <%s>..." % thumb_path)
+    logger.info("Storing thumbs in <%s>..." % thumb_path)
     try:
         os.mkdir(_abspath(thumb_path))
-        print("Creating it...")
+        logger.info("Creating it...")
 
     except OSError:
         pass
 
     small_path = os.path.join(directory, SMALL_DIR)
-    print("Storing small versions in <%s>..." % small_path)
+    logger.info("Storing small versions in <%s>..." % small_path)
     try:
         os.mkdir(_abspath(small_path))
-        print("Creating it...")
+        logger.info("Creating it...")
 
     except OSError:
         pass
@@ -231,7 +232,7 @@ def create_thumbnails(directory, to = None):
     nb_imgs = len(files)
 
     for index, img in enumerate(files):
-        print("Image %d/%d: %s" % (index + 1, nb_imgs, img))
+        logger.info("Image %d/%d: %s" % (index + 1, nb_imgs, img))
         imgs.append(GuakamoleImage(img))
 
     imgs.sort() #sorts over the creation dates!
