@@ -20,7 +20,7 @@ MEDIA_BASE = u'media/'
 
 PHOTOS_BASE = u'media/photos/'
 
-recent = []
+recents = []
 visited_path = {}
 
 env = Environment(loader=PackageLoader('gallery', 'tpl'))
@@ -67,7 +67,7 @@ def make_gallery(path, options):
         title = (path.split("/")[1:-1], path.split("/")[-1])
         logger.info("Sending base gallery")
         #import pdb;pdb.set_trace()
-        return imap(fixencoding, tpl.generate(title = title, path = path, dirs = dirs, imgs = imgs[start:end], counter = end))
+        return imap(fixencoding, tpl.generate(title = title, path = path, dirs = dirs, hasimgs = (len(imgs) > 0), imgs = imgs[start:end], recents = recents, counter = end))
 
 
 def app(environ, start_response):

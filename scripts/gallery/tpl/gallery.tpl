@@ -12,7 +12,6 @@
 </head>
 
 <body>
-
 <div id="header">
     <h1><a href="/"><img alt="Retour à la page d'accueil" src="/images/maison.svg" /></a>
     {% for part in title[0] %}
@@ -21,17 +20,23 @@
     &gt; {{title[1]}}
     </h1>
 </div>
-
+{% if recents %}
+<div id="recent">
+{% for img in recents %}
+    <div class="photo"><a href="/{{ img.small }}" rel="lightbox[page]"><img title="{{ "%s - %s" % (img.name[:-4], img.date) }}" src="/{{ img.thumb }}" /></a></div>
+    {% endfor %}
+</div>
+{% endif %}
+{% if dirs %}
 <div id="directories">
     {% for d in dirs %}
     <a href="{{ d[1] }}">{{ d[0] }}</a>
     {% endfor %}
 </div>
-
+{% endif %}
+{% if hasimgs %}
 <div id="gallery">
-
 {% include 'photo_items.tpl' %}
-
 </div>
 
 <div id="spinner"></div>
@@ -89,5 +94,6 @@ $(window).scroll(function(){
 
 </script>
 
+{% endif %}
 </body>
 </html>
