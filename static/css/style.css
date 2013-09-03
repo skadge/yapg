@@ -76,6 +76,16 @@ h1 {
     float: left;
 }
 
+.downloadlink {
+   background-image: url('/images/download.png');
+   position:absolute;
+   display: block;
+   margin-left: 5px;
+   margin-top: -34px;
+   height: 24px;
+   width: 24px;
+}
+
 #spinner {
    background-image: url('/images/spinner.gif');
    position: fixed;
