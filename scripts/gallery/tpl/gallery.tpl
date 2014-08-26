@@ -15,7 +15,7 @@
 <div id="header">
     <h1><a href="/"><img alt="Retour à la page d'accueil" src="/images/maison.svg" /></a>
     {% for part in title[0] %}
-    &gt; <a href="{{ "/" + part }}">{{part}}</a>
+    &gt; <a href="{{ "/" + part }}">{{part.split("/")[-1]}}</a>
     {% endfor %}
     &gt; {{title[1]}}
     </h1>

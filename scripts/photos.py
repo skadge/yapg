@@ -64,7 +64,8 @@ def make_gallery(path, options):
         dirs_names = [ name for name in os.listdir(parentdir) if os.path.isdir(os.path.join(parentdir, name)) and name[0] not in ['.', '_']]
         dirs = [ (name, os.path.join(path, name)) for name in dirs_names]
 
-        title = (path.split("/")[1:-1], path.split("/")[-1])
+        paths = path.split("/")[1:-1]
+        title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Sending base gallery")
         #import pdb;pdb.set_trace()
         return imap(fixencoding, tpl.generate(title = title, path = path, dirs = dirs, hasimgs = (len(imgs) > 0), imgs = imgs[start:end], recents = recents, counter = end))
@@ -72,6 +73,7 @@ def make_gallery(path, options):
 
 def app(environ, start_response):
 
+    logger.info("Incoming request!")
     start_response('200 OK', [('Content-Type', 'text/html')])
 
     path = environ["PATH_INFO"].decode("utf-8")
@@ -83,3 +85,4 @@ def app(environ, start_response):
 
 logger.info("Starting to serve...")
 WSGIServer(app, bindAddress = ("127.0.0.1", 8080)).run()
+logger.info("Bye bye.")
