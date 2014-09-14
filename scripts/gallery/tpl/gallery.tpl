@@ -27,6 +27,9 @@
     {% endfor %}
 </div>
 {% endif %}
+{% if badpath %}
+Pas de photos à cette adresse ! <a href="/">Retour à la page d'accueil</a>.
+{% endif %}
 {% if dirs %}
 <div id="directories">
     {% for d in dirs %}

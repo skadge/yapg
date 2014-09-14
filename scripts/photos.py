@@ -36,7 +36,15 @@ def make_gallery(path, options):
     fullpath= PHOTOS_BASE + path
 
 
-    checksum = compute_checksum(fullpath) # compute a checksum of the path to detect changes
+    try:
+        checksum = compute_checksum(fullpath) # compute a checksum of the path to detect changes
+    except OSError:
+        # the path does not exist!
+        paths = path.split("/")[1:-1]
+        title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
+        logger.info("Bad path! %s"%path)
+        return imap(fixencoding, tpl.generate(title = title, path = path, badpath=True, dirs = None, hasimgs = False, recents = None))
+
     if (fullpath not in visited_path) or visited_path[fullpath] != checksum:
         create_thumbnails(fullpath, to = MEDIA_BASE)
         visited_path[fullpath] = checksum
@@ -67,7 +75,6 @@ def make_gallery(path, options):
         paths = path.split("/")[1:-1]
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Sending base gallery")
-        #import pdb;pdb.set_trace()
         return imap(fixencoding, tpl.generate(title = title, path = path, dirs = dirs, hasimgs = (len(imgs) > 0), imgs = imgs[start:end], recents = recents, counter = end))
 
 
