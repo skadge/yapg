@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="/js/jquery.masonry.min.js"></script>
     <script src="/js/lightbox.js"></script>
     <link rel="stylesheet" href="/css/style.css" />
