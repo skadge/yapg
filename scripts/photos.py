@@ -69,7 +69,7 @@ def make_gallery(path, options):
     else:
 
         parentdir = STATIC_ROOT + PHOTOS_BASE + path
-        dirs_names = [ name for name in os.listdir(parentdir) if os.path.isdir(os.path.join(parentdir, name)) and name[0] not in ['.', '_']]
+        dirs_names = sorted([ name for name in os.listdir(parentdir) if os.path.isdir(os.path.join(parentdir, name)) and name[0] not in ['.', '_']], reverse=True)
         dirs = [ (name, os.path.join(path, name)) for name in dirs_names]
 
         paths = path.split("/")[1:-1]
