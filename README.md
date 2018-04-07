@@ -18,7 +18,11 @@ display larger pictures.
 To use
 ------
 
-- install `python-imaging`, `python-flup` and `python-jinja2` if necessary
+- install `python-imaging`, `python-flup` and `python-jinja2`,
+  `python-markdown`:
+```
+sudo apt install python-imaging python-flup python-jinja2 python-markdown
+```
 - make `/static/media/photos` to point to your photos
 - I use the following configuration for nginx:
 
@@ -50,3 +54,18 @@ server {
 	}
 }
 ```
+
+Finally, start the Python script `photo.py` (you might want to run that in a
+`screen` session to keep it running on the server).
+
+
+Captions
+--------
+
+YAPG can display captions for your pictures: simply rename the image file to
+start with a `@` character: everything after this character (excluding file
+extension!) will be used as a caption. Markdown syntax is even allowed!
+
+(note that some characters are invalid in filenames, like `/`: in order to put
+links in your captions, you might want to use `|` instead, which is replaced
+automatically with `/` by YAPG).
