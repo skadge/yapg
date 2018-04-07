@@ -80,9 +80,11 @@ h1 {
     position: absolute;
     bottom: 0px;
     background: rgba(0,0,0,0.5);
-    text-align: right;
-    width: 100%;
-    padding-left: 24px;
+    text-align: left;
+    left: 0px;
+    right: 0px;
+    padding-left: 30px;
+    padding-right: 10px;
 }
 
 .photo-caption a {
