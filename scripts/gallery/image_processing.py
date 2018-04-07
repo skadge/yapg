@@ -7,6 +7,7 @@ import glob
 import Image
 import random
 import datetime
+import markdown 
 
 # EXIF orientation, from http://sylvana.net/jpegcrop/exif_orientation.html
 NORMAL = 1
@@ -55,6 +56,10 @@ class GuakamoleImage:
 
         self.img = Image.open(self.abspath)
 
+        if self.img is None:
+            logger.error("Failed to open <%s>. Skipping." % self.abspath)
+            return
+
         self.date = self._date()
         logger.info("%s created at %s" % (self.name, self.date))
 
@@ -69,6 +74,10 @@ class GuakamoleImage:
 
         self.small = self.smallpath + self.name
         self.abssmall = self.abssmallpath + self.name
+
+        self.caption = ""
+        if self.name.startswith("@"):
+            self.caption = markdown.markdown(self.name[1:-4].replace("|","/"))
 
 
         self._make_thumb() # Attention! modifies self.img -> EXIF rotate

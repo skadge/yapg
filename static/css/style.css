@@ -76,6 +76,19 @@ h1 {
     float: left;
 }
 
+.photo-caption {
+    position: absolute;
+    bottom: 0px;
+    background: rgba(0,0,0,0.5);
+    text-align: center;
+    width: 100%;
+}
+
+.photo-caption a {
+    text-decoration: underline solid #666;
+}
+
+
 .downloadlink {
    background-image: url('/images/download.png');
    position:absolute;
