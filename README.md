@@ -69,3 +69,12 @@ extension!) will be used as a caption. Markdown syntax is even allowed!
 (note that some characters are invalid in filenames, like `/`: in order to put
 links in your captions, you might want to use `|` instead, which is replaced
 automatically with `/` by YAPG).
+
+Voting
+------
+
+Photo voting can be enabled per gallery by creating (touching) an empty `.vote` file in the desired photo directory.
+
+A small, clickable star appears next to each image. Visitors can use it to
+'favourite' one image. The vote tally per image is stored server-side in a file
+called `.votes.json`, one file per directory.

@@ -37,7 +37,7 @@ EXTENSIONS = ["jpg", "JPG", "png", "PNG"]
 
 images = {}
 
-def _abspath(path):
+def absolute_media_path(path):
     return STATIC_ROOT + path
 
 
@@ -48,8 +48,8 @@ class GuakamoleImage:
         self.path = path
         self.dirname = os.path.dirname(path)
 
-        self.abspath = _abspath(path)
-        self.absdirname = _abspath(self.dirname)
+        self.abspath = absolute_media_path(path)
+        self.absdirname = absolute_media_path(self.dirname)
 
         self.name = os.path.basename(path)
 
@@ -64,13 +64,13 @@ class GuakamoleImage:
         logger.info("%s created at %s" % (self.name, self.date))
 
         self.thumbpath = (thumbs_path or (self.dirname + "/")) + THUMBS_DIR
-        self.absthumbpath = _abspath(self.thumbpath)
+        self.absthumbpath = absolute_media_path(self.thumbpath)
 
         self.thumb = self.thumbpath + self.date + "~~" + self.name
         self.absthumb = self.absthumbpath + self.date + "~~" + self.name
 
         self.smallpath = self.dirname + "/" + SMALL_DIR
-        self.abssmallpath = _abspath(self.smallpath)
+        self.abssmallpath = absolute_media_path(self.smallpath)
 
         self.small = self.smallpath + self.name
         self.abssmall = self.abssmallpath + self.name
@@ -200,7 +200,7 @@ def list_images(path):
 
 def compute_checksum(path):
 
-    path = _abspath(os.path.normpath(path))
+    path = absolute_media_path(os.path.normpath(path))
     files = tuple(f for f in os.listdir(path) if os.path.splitext(f)[1][1:] in EXTENSIONS)
     return hash(files)
 
@@ -218,7 +218,7 @@ def create_thumbnails(directory, to = None):
     thumb_path = os.path.join(thumbs_path or directory, THUMBS_DIR)
     logger.info("Storing thumbs in <%s>..." % thumb_path)
     try:
-        os.mkdir(_abspath(thumb_path))
+        os.mkdir(absolute_media_path(thumb_path))
         logger.info("Creating it...")
 
     except OSError:
@@ -227,14 +227,14 @@ def create_thumbnails(directory, to = None):
     small_path = os.path.join(directory, SMALL_DIR)
     logger.info("Storing small versions in <%s>..." % small_path)
     try:
-        os.mkdir(_abspath(small_path))
+        os.mkdir(absolute_media_path(small_path))
         logger.info("Creating it...")
 
     except OSError:
         pass
 
 
-    path = _abspath(directory)
+    path = absolute_media_path(directory)
 
     imgs = []
     files = [os.path.join(directory, f) for f in os.listdir(path) if os.path.splitext(f)[1][1:] in EXTENSIONS]

@@ -66,7 +66,7 @@ $(document).ready(function() {
 });
 
 function get_more() {
-    $.get('{{ path }}?from=' + img_counter + '&nb=' + batch_size, function(data) {
+    $.get('{{ path }}?action=getimages&from=' + img_counter + '&nb=' + batch_size, function(data) {
             if (data == "") {
                 $('#spinner').animate({ opacity: 0 });
                 nomoreimages = true;
@@ -94,6 +94,21 @@ $(window).scroll(function(){
             get_more();
         }
 });
+
+{% if vote %}
+function toggle_favorite(star, img) {
+    // unmark favourite
+    if ($(star).hasClass("selected")) {
+        $(star).removeClass("selected");
+        $.get('{{ path }}?img=' + img + '&action=unfavorite', function(data) {});
+    }
+    // mark favourite
+    else {
+        $(star).addClass("selected");
+        $.get('{{ path }}?img=' + img + '&action=favorite', function(data) {});
+    }
+}
+{% endif %}
 
 </script>
 

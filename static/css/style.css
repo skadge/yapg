@@ -102,6 +102,24 @@ h1 {
    width: 20px;
 }
 
+.favorite {
+   background-image: url('/images/favorite.svg');
+   position:absolute;
+   display: block;
+   margin-left: 30px;
+   margin-top: -34px;
+   height: 20px;
+   width: 20px;
+}
+
+.favorite:hover {
+   background-image: url('/images/favorite-hover.svg');
+}
+
+.favorite.selected {
+   background-image: url('/images/favorite-selected.svg');
+}
+
 #spinner {
    background-image: url('/images/spinner.gif');
    position: fixed;
