@@ -79,6 +79,9 @@ function get_more() {
             $container.append($newElems);
             $newElems.imagesLoaded(function(){
             $newElems.animate({ opacity: 1 });
+{% if vote %}
+            set_previous_favorites();
+{% endif %}
             $container.masonry( 'appended', $newElems, true );
             loading = false;
             $('#spinner').animate({ opacity: 0 });
@@ -96,16 +99,24 @@ $(window).scroll(function(){
 });
 
 {% if vote %}
+function set_previous_favorites() {
+    for(i=0; i < localStorage.length; i++){
+        $("#fav_"+ localStorage.key(i).replace(".", "\\.")).addClass("selected");
+    }
+}
+
 function toggle_favorite(star, img) {
     // unmark favourite
     if ($(star).hasClass("selected")) {
         $(star).removeClass("selected");
         $.get('{{ path }}?img=' + img + '&action=unfavorite', function(data) {});
+        localStorage.removeItem(img)
     }
     // mark favourite
     else {
         $(star).addClass("selected");
         $.get('{{ path }}?img=' + img + '&action=favorite', function(data) {});
+        localStorage.setItem(img, true)
     }
 }
 {% endif %}
