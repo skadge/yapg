@@ -101,20 +101,20 @@ $(window).scroll(function(){
 {% if vote %}
 function set_previous_favorites() {
     for(i=0; i < localStorage.length; i++){
-        $("#fav_"+ localStorage.key(i).replace(".", "\\.")).addClass("selected");
+        $("#fav_"+ localStorage.key(i).replace(".", "\\.")).parent().addClass("selected");
     }
 }
 
 function toggle_favorite(star, img) {
     // unmark favourite
-    if ($(star).hasClass("selected")) {
-        $(star).removeClass("selected");
+    if ($(star).parent().hasClass("selected")) {
+        $(star).parent().removeClass("selected");
         $.get('{{ path }}?img=' + img + '&action=unfavorite', function(data) {});
         localStorage.removeItem(img)
     }
     // mark favourite
     else {
-        $(star).addClass("selected");
+        $(star).parent().addClass("selected");
         $.get('{{ path }}?img=' + img + '&action=favorite', function(data) {});
         localStorage.setItem(img, true)
     }

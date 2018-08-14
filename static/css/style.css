@@ -76,6 +76,11 @@ h1 {
     float: left;
 }
 
+.photo.selected img {
+    /*border: solid 3px #fc0;*/
+    box-shadow: 0px 0px 3px 3px #fc0;
+}
+
 .photo-caption {
     position: absolute;
     bottom: 0px;
@@ -116,7 +121,7 @@ h1 {
    background-image: url('/images/favorite-hover.svg');
 }
 
-.favorite.selected {
+.photo.selected .favorite {
    background-image: url('/images/favorite-selected.svg');
 }
 
