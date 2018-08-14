@@ -70,9 +70,12 @@ def make_gallery(path, options):
         if path not in favorites_registery:
             votes_json = absolute_media_path(os.path.normpath(os.path.join(fullpath, ".votes.json")))
             if os.path.exists(votes_json):
+                logger.info("Loading existing votes for gallery %s:" % path)
                 with open(votes_json, "r") as f:
                     favorites_registery[path] = json.load(f)
+                logger.info(str(favorites_registery))
             else:
+                logger.info("No previous .votes.json. Creating it.")
                 favorites_registery[path] = {}
                 save_votes(path)
 
@@ -122,12 +125,12 @@ def toggle_favorite(action, path, options):
     filename = options["img"][0]
     if action == "favorite":
         logger.info("Marking image %s/%s as a favourite" % (path, filename))
-        votes = favorites.setdefault(img, 0)
-        favorites[img] = votes + 1
+        votes = favorites.setdefault(filename, 0)
+        favorites[filename] = votes + 1
     else:
         logger.info("Un-marking image %s/%s as a favourite" % (path, filename))
-        if img in favorites:
-            favorites[img] -= 1
+        if filename in favorites:
+            favorites[filename] -= 1
     favorites_registery[path] = favorites
     save_votes(path)
 
@@ -141,7 +144,7 @@ def app(environ, start_response):
 
     options = urlparse.parse_qs(environ["QUERY_STRING"])
 
-    action = options.get("action", "getimages")[0]
+    action = options.get("action", ["getimages"])[0]
 
     logger.info("Got request with action <%s>" % action)
     if action in ["favorite", "unfavorite"]:
