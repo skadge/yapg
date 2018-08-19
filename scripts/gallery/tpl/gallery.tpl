@@ -46,7 +46,8 @@ Pas de photos à cette adresse ! <a href="/">Retour à la page d'accueil</a>.
 
 <script>
 lightbox.option({
-      'fitImagesInViewport': true
+      'fitImagesInViewport': true,
+      'showImageNumberLabel': false
     })
 
 img_counter = {{ counter }};
