@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="/js/jquery.masonry.min.js"></script>
-    <script src="/js/lightbox.js"></script>
+    <script src="/js/lightbox.min.js"></script>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/lightbox.css" />
     <title>Guakamole : Fotos Y Takos</title>
@@ -45,6 +45,10 @@ Pas de photos à cette adresse ! <a href="/">Retour à la page d'accueil</a>.
 <div id="spinner"></div>
 
 <script>
+lightbox.option({
+      'fitImagesInViewport': true
+    })
+
 img_counter = {{ counter }};
 
 batch_size = 20;
