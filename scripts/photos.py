@@ -41,11 +41,12 @@ def make_gallery(path, options):
 
     try:
         checksum = compute_checksum(fullpath) # compute a checksum of the path to detect changes
-    except OSError:
+    except OSError as e:
         # the path does not exist!
         paths = path.split("/")[1:-1]
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Bad path! %s"%path)
+        logger.error(str(e))
         return imap(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None))
 
     if (fullpath not in visited_path) or visited_path[fullpath] != checksum:

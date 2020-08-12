@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <title>Guakamole : Fotos Y Takos</title>
+</head>
+
+<body>
+<div id="fav">
+</div>
+
+    <script>
+    for(i=0; i < localStorage.length; i++){
+        $("#fav").html($("#fav").html() + localStorage.key(i) + "<br/>");
+    }
+
+
+    </script>
+</body>
+
+</html>

@@ -4,7 +4,7 @@ import logging; logger = logging.getLogger("main")
 import os
 import copy
 import glob
-import Image
+from PIL import Image
 import random
 import datetime
 import markdown 
