@@ -6,12 +6,10 @@ FORMAT = '%(asctime)s - %(levelname)s: %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
 import time
-from itertools import imap
 
-from cgi import escape
 import sys, os
 from flup.server.fcgi import WSGIServer
-import urlparse
+from urllib.parse import parse_qs
 from jinja2 import Environment, PackageLoader
 import json
 
@@ -47,7 +45,7 @@ def make_gallery(path, options):
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Bad path! %s"%path)
         logger.error(str(e))
-        return imap(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None))
+        return map(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None))
 
     if (fullpath not in visited_path) or visited_path[fullpath] != checksum:
         create_thumbnails(fullpath, to = MEDIA_BASE)
@@ -88,7 +86,7 @@ def make_gallery(path, options):
             end = len(imgs)
 
         logger.info("Sending %d images" % (end - start))
-        return imap(fixencoding, items_tpl.generate(imgs = imgs[start:end], vote=vote_enabled))
+        return map(fixencoding, items_tpl.generate(imgs = imgs[start:end], vote=vote_enabled))
 
     else:
 
@@ -99,7 +97,7 @@ def make_gallery(path, options):
         paths = path.split("/")[1:-1]
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Sending base gallery")
-        return imap(fixencoding, tpl.generate(title=title,
+        return map(fixencoding, tpl.generate(title=title,
                                               path=path, 
                                               dirs=dirs, 
                                               hasimgs=(len(imgs) > 0), 
@@ -141,9 +139,9 @@ def app(environ, start_response):
     logger.info("Incoming request!")
     start_response('200 OK', [('Content-Type', 'text/html')])
 
-    path = environ["PATH_INFO"].decode("utf-8")
+    path = environ["PATH_INFO"].encode('latin9').decode('utf_8')
 
-    options = urlparse.parse_qs(environ["QUERY_STRING"])
+    options = parse_qs(environ["QUERY_STRING"])
 
     action = options.get("action", ["getimages"])[0]
 
