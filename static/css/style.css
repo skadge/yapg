@@ -564,8 +564,8 @@ body.lb-open { overflow: hidden; }
 .lb-next:hover { transform: translateY(-50%) scale(1.08); }
 
 .lb-close {
-    top: 14px;
-    right: 14px;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: calc(14px + env(safe-area-inset-right, 0px));
     width: 44px;
     height: 44px;
     font-size: 26px;
@@ -580,12 +580,13 @@ body.lb-open { overflow: hidden; }
     font-size: 38px;
     border-radius: 10px;
 }
-.lb-prev { left: 12px; }
-.lb-next { right: 12px; }
+.lb-prev { left: calc(12px + env(safe-area-inset-left, 0px)); }
+.lb-next { right: calc(12px + env(safe-area-inset-right, 0px)); }
 
 .lb-download {
     position: fixed;
-    bottom: 18px;
+    /* keep clear of the iOS home indicator / Android gesture bar */
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     left: 50%;
     transform: translateX(-50%);
     display: inline-flex;

@@ -3,7 +3,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
     <link rel="icon" href="/images/favicon.svg" type="image/svg+xml" />
     <link rel="alternate icon" href="/images/favicon.png" />
