@@ -422,12 +422,14 @@
         if (!lbCurrent) return;
         var url = lbCurrent.getAttribute('data-original');
         var name = lbCurrent.getAttribute('data-name') || 'photo.jpg';
-        var title = rawCaption(lbCurrent) || name;
+        var caption = rawCaption(lbCurrent);
         lbDownload.classList.add('busy');
         fetch(url).then(function (r) { return r.blob(); }).then(function (blob) {
             var file = new File([blob], name, { type: blob.type || 'image/jpeg' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                return navigator.share({ files: [file], title: title });
+            var data = { files: [file], title: caption || name };
+            if (caption) data.text = caption;    // include the caption when there is one
+            if (navigator.canShare && navigator.canShare(data)) {
+                return navigator.share(data);
             }
             window.location.href = url;          // fallback: open the original
         }).catch(function (err) {
