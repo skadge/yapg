@@ -18,13 +18,23 @@ display larger pictures.
 To use
 ------
 
-- install `python-imaging`, `python-flup` and `python-jinja2`,
-  `python-markdown`:
+- create a virtual environment and install the dependencies:
 ```
-sudo apt install python-imaging python-flup python-jinja2 python-markdown
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
-- make `/static/media/photos` to point to your photos
-- I use the following configuration for nginx:
+- make `static/media/photos` point to your photos
+- run the app with [gunicorn](https://gunicorn.org/) (a single worker is
+  required: the gallery keeps its thumbnail/vote caches in memory):
+```
+.venv/bin/gunicorn --chdir scripts --workers 1 --timeout 120 \
+                   --bind 127.0.0.1:8083 photos:app
+```
+  (you might want to run that in a `screen`/`systemd` unit to keep it alive).
+  For quick local hacking you can also run the bundled development server:
+  `python3 scripts/photos.py` (listens on `127.0.0.1:8083`, override with `PORT`).
+- I use the following configuration for nginx, proxying to gunicorn:
 
 ```
 server {
@@ -40,23 +50,14 @@ server {
 	 
 
 	location / {
-	    fastcgi_pass 127.0.0.1:8080;
-	    fastcgi_param SERVER_NAME $server_name;
-	    fastcgi_param SERVER_PORT $server_port;
-	    fastcgi_param SERVER_PROTOCOL $server_protocol;
-	    fastcgi_param PATH_INFO $fastcgi_script_name;
-	    fastcgi_param REQUEST_METHOD $request_method;
-	    fastcgi_param QUERY_STRING $query_string;
-	    fastcgi_param CONTENT_TYPE $content_type;
-	    fastcgi_param CONTENT_LENGTH $content_length;
-	    fastcgi_pass_header Authorization;
-	    fastcgi_intercept_errors off;
+	    proxy_pass http://127.0.0.1:8083;
+	    proxy_set_header Host $host;
+	    proxy_set_header X-Real-IP $remote_addr;
+	    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	    proxy_set_header X-Forwarded-Proto $scheme;
 	}
 }
 ```
-
-Finally, start the Python script `photo.py` (you might want to run that in a
-`screen` session to keep it running on the server).
 
 
 Captions

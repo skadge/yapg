@@ -8,7 +8,6 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 import time
 
 import sys, os
-from flup.server.fcgi import WSGIServer
 from urllib.parse import parse_qs
 from jinja2 import Environment, PackageLoader
 import json
@@ -139,7 +138,9 @@ def app(environ, start_response):
     logger.info("Incoming request!")
     start_response('200 OK', [('Content-Type', 'text/html')])
 
-    path = environ["PATH_INFO"].encode('latin9').decode('utf_8')
+    # PEP 3333: PATH_INFO is a native string decoded from the raw bytes via
+    # latin-1; re-encode to recover the original UTF-8 (accented gallery names).
+    path = environ["PATH_INFO"].encode('latin-1').decode('utf_8')
 
     options = parse_qs(environ["QUERY_STRING"])
 
@@ -152,6 +153,13 @@ def app(environ, start_response):
     else:
         return make_gallery(path, options)
 
-logger.info("Starting to serve...")
-WSGIServer(app, bindAddress = ("127.0.0.1", 8083)).run()
-logger.info("Bye bye.")
+if __name__ == "__main__":
+    # Lightweight development server. In production, serve `photos:app` with
+    # gunicorn instead (see README.md).
+    from wsgiref.simple_server import make_server
+    port = int(os.environ.get("PORT", 8083))
+    logger.info("Starting development server on http://127.0.0.1:%d ..." % port)
+    try:
+        make_server("127.0.0.1", port, app).serve_forever()
+    except KeyboardInterrupt:
+        logger.info("Bye bye.")

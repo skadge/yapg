@@ -15,7 +15,9 @@ UPSIDEDOWN = 3
 LEFT = 8
 RIGHT = 6
 
-STATIC_ROOT = u"../static/"
+# Resolved relative to this file (scripts/gallery/) so the app works
+# regardless of the current working directory (e.g. when launched by gunicorn).
+STATIC_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "static") + "/"
 
 thumbs_path = u"" # default to None -> original image dir
 THUMBS_DIR = u"_thumbs/"
