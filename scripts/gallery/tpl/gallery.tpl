@@ -310,7 +310,16 @@
             opts.body = body;
             opts.headers['Content-Type'] = contentType || 'application/octet-stream';
         }
-        return fetch(BASE + query, opts).then(function (r) { return r.json(); });
+        return fetch(BASE + query, opts).then(function (r) {
+            // A non-JSON response (e.g. an nginx "413 Request Entity Too Large"
+            // HTML page) still yields a useful, visible error message.
+            return r.json().catch(function () {
+                return { ok: false, msg: 'HTTP ' + r.status +
+                         (r.status === 413 ? ' (fichier trop volumineux)' : '') };
+            });
+        }).catch(function () {
+            return { ok: false, msg: 'réseau' };
+        });
     }
 
     function setStatus(msg) {
@@ -328,20 +337,25 @@
 
     function uploadFiles(files) {
         if (!files.length) return;
-        var done = 0, failed = 0;
+        var failures = [];
         function next(i) {
             if (i >= files.length) {
-                if (failed) setStatus(failed + ' échec(s) sur ' + files.length);
-                window.location.reload();
+                if (failures.length) {
+                    // keep the error on screen (don't reload) so it can be read
+                    setStatus('Échec : ' + failures.join(' ; '));
+                } else {
+                    window.location.reload();
+                }
                 return;
             }
             var f = files[i];
             setStatus('Envoi ' + (i + 1) + '/' + files.length + ' : ' + f.name);
             editPost('?action=upload&name=' + encodeURIComponent(f.name),
                      f, f.type || 'application/octet-stream')
-                .then(function (res) { if (!res.ok) failed++; })
-                .catch(function () { failed++; })
-                .then(function () { done++; next(i + 1); });
+                .then(function (res) {
+                    if (!res.ok) failures.push(f.name + ' — ' + (res.msg || '?'));
+                })
+                .then(function () { next(i + 1); });
         }
         next(0);
     }
