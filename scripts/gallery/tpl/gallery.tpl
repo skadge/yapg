@@ -98,6 +98,7 @@
 
     var columns = [];
     var colHeights = [];
+    var allPhotos = [];            // every photo in true sequence (server order)
 
     /* ---------- responsive masonry (shortest-column placement) ---------- */
 
@@ -111,7 +112,6 @@
     }
 
     function buildColumns() {
-        var photos = Array.prototype.slice.call(gallery.querySelectorAll('.photo'));
         var n = columnCount();
         gallery.textContent = '';
         columns = [];
@@ -123,7 +123,7 @@
             columns.push(col);
             colHeights.push(0);
         }
-        photos.forEach(placePhoto);
+        allPhotos.forEach(placePhoto);   // re-place in true order, not DOM order
     }
 
     function shortestColumn() {
@@ -162,6 +162,7 @@
                 tmp.innerHTML = html;
                 var fresh = Array.prototype.slice.call(tmp.querySelectorAll('.photo'));
                 fresh.forEach(function (photo) {
+                    allPhotos.push(photo);
                     photo.classList.add('loading');
                     placePhoto(photo);
                     var img = photo.querySelector('img');
@@ -231,7 +232,7 @@
     var lbIndex = -1;
 
     function photoList() {
-        return Array.prototype.slice.call(gallery.querySelectorAll('.photo'));
+        return allPhotos;   // true sequence, not column-major DOM order
     }
 
     // On touch devices, use the whole screen for the lightbox. Triggered from
