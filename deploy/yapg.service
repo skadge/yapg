@@ -53,7 +53,19 @@ RestartSec=5
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
-ProtectHome=true
+
+# ProtectHome must stay OFF when the app lives under /home -- e.g. when
+# WorkingDirectory is a symlink into a home directory. The checkout, the venv
+# (its Python interpreter) and the writable static/media thumbnail dir are then
+# all under /home: with ProtectHome=true systemd cannot exec the interpreter
+# (status=203/EXEC), and 'read-only' would block thumbnail writes and gunicorn's
+# control file. Set this to 'true' only if the app lives entirely outside /home.
+ProtectHome=false
+# Alternative that keeps the rest of /home hidden while exposing just the app
+# (replace the path with your real, dereferenced checkout location):
+#   ProtectHome=tmpfs
+#   BindPaths=/home/guakamole/src/yapg
+#   Environment=HOME=/home/guakamole/src/yapg
 
 [Install]
 WantedBy=multi-user.target
