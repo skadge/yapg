@@ -2,6 +2,7 @@
 
 import logging; logger = logging.getLogger("main")
 import os
+import sys
 import copy
 import glob
 from PIL import Image
@@ -43,6 +44,21 @@ def absolute_media_path(path):
     return STATIC_ROOT + path
 
 
+def _decode_utf8(name):
+    """Recover the caption text from a filename as proper UTF-8.
+
+    os.listdir() decodes filenames with the filesystem encoding, which is not
+    always UTF-8 (e.g. a C/POSIX locale, common under systemd). Re-encode with
+    that same encoding to get the original bytes back, then decode them as
+    UTF-8 so accents and emoji in captions survive. This is a no-op when the
+    filesystem encoding already is UTF-8.
+    """
+    try:
+        return name.encode(sys.getfilesystemencoding(), "surrogateescape").decode("utf-8")
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return name.encode(sys.getfilesystemencoding(), "surrogateescape").decode("utf-8", "replace")
+
+
 class GuakamoleImage:
 
     def __init__(self, path):
@@ -79,7 +95,7 @@ class GuakamoleImage:
 
         self.caption = ""
         if self.name.startswith("@"):
-            self.caption = markdown.markdown(self.name[1:-4].replace("|","/"))
+            self.caption = markdown.markdown(_decode_utf8(self.name[1:-4]).replace("|", "/"))
 
 
         self._make_thumb() # Attention! modifies self.img -> EXIF rotate

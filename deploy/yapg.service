@@ -17,6 +17,12 @@ After=network.target
 [Service]
 Type=simple
 
+# Force a UTF-8 locale: systemd services often inherit C/POSIX, which makes
+# Python decode photo filenames (and thus captions) with a non-UTF-8 encoding,
+# breaking accents and emoji.
+Environment=LANG=C.UTF-8
+Environment=PYTHONUTF8=1
+
 # The user/group running the gallery. It needs write access to
 # static/media (thumbnails and .votes.json are generated there).
 User=www-data
