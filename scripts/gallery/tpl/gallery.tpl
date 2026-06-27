@@ -411,33 +411,42 @@
 
     var SHARE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>';
 
-    function canShareFiles() {
-        try {
-            return !!(navigator.canShare && navigator.share &&
-                navigator.canShare({ files: [new File([], 'x.jpg', { type: 'image/jpeg' })] }));
-        } catch (e) { return false; }
-    }
-
     function sharePhoto() {
         if (!lbCurrent) return;
-        var url = lbCurrent.getAttribute('data-original');
+        var path = lbCurrent.getAttribute('data-original');
+        var url = new URL(path, window.location.href).href;   // absolute, for link share
         var name = lbCurrent.getAttribute('data-name') || 'photo.jpg';
         var caption = rawCaption(lbCurrent);
+        var title = caption || name;
+
+        // Share a link to the original (+ caption). Firefox for Android supports
+        // this but not file sharing.
+        function shareLink() {
+            var data = { title: title, url: url };
+            if (caption) data.text = caption;
+            return navigator.share(data);
+        }
+
         lbDownload.classList.add('busy');
-        fetch(url).then(function (r) { return r.blob(); }).then(function (blob) {
+        // Prefer sharing the actual image file (Chrome etc.); fall back to a link.
+        fetch(path).then(function (r) { return r.blob(); }).then(function (blob) {
             var file = new File([blob], name, { type: blob.type || 'image/jpeg' });
-            var data = { files: [file], title: caption || name };
-            if (caption) data.text = caption;    // include the caption when there is one
+            var data = { files: [file], title: title };
+            if (caption) data.text = caption;
             if (navigator.canShare && navigator.canShare(data)) {
                 return navigator.share(data);
             }
-            window.location.href = url;          // fallback: open the original
+            return shareLink();
         }).catch(function (err) {
-            if (!err || err.name !== 'AbortError') window.open(url, '_blank');
+            if (err && err.name === 'AbortError') return;   // user dismissed the sheet
+            // file path failed: try a plain link share, else just open the image
+            shareLink().catch(function (e) {
+                if (!e || e.name !== 'AbortError') window.open(path, '_blank');
+            });
         }).then(function () { lbDownload.classList.remove('busy'); });
     }
 
-    if (canShareFiles()) {
+    if (typeof navigator.share === 'function') {
         lbDownload.innerHTML = SHARE_ICON + '<span>Partager</span>';
         lbDownload.setAttribute('aria-label', 'Partager');
         lbDownload.removeAttribute('download');
