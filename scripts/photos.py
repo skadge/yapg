@@ -53,7 +53,7 @@ def make_gallery(path, options, edit_mode=False):
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Bad path! %s"%path)
         logger.error(str(e))
-        return map(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None, edit=edit_mode))
+        return map(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None, edit=edit_mode, edit_available=edit.edit_enabled()))
 
     if (fullpath not in visited_path) or visited_path[fullpath] != checksum:
         create_thumbnails(fullpath, to = MEDIA_BASE)
@@ -114,7 +114,8 @@ def make_gallery(path, options, edit_mode=False):
                                               recents=recents,
                                               vote=vote_enabled,
                                               counter=end,
-                                              edit=edit_mode))
+                                              edit=edit_mode,
+                                              edit_available=edit.edit_enabled()))
 
 
 def load_order(fullpath):

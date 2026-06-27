@@ -21,6 +21,11 @@
     <span class="sep">&rsaquo;</span> {{title[1]}}
     {% if edit %}<span class="edit-badge">édition</span>{% endif %}
     </h1>
+    {% if edit %}
+    <a class="mode-toggle mode-exit" href="{{ path }}">&times;&nbsp;Quitter l'édition</a>
+    {% elif edit_available %}
+    <a class="mode-toggle mode-enter" href="{{ '/edit' + path }}" title="Passer en mode édition" aria-label="Passer en mode édition">&#9998;</a>
+    {% endif %}
 </header>
 
 {% if badpath %}
