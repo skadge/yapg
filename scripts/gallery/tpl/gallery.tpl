@@ -219,12 +219,31 @@
         return Array.prototype.slice.call(gallery.querySelectorAll('.photo'));
     }
 
+    // On touch devices, use the whole screen for the lightbox. Triggered from
+    // a tap (a user gesture), so requestFullscreen is allowed; degrades quietly
+    // where it isn't supported (e.g. iOS Safari only allows it on <video>).
+    var wantFullscreen = window.matchMedia('(hover: none)').matches;
+
+    function enterFullscreen() {
+        if (!wantFullscreen || document.fullscreenElement) return;
+        var fn = lb.requestFullscreen || lb.webkitRequestFullscreen;
+        if (fn) { try { var p = fn.call(lb); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    }
+
+    function exitFullscreen() {
+        var el = document.fullscreenElement || document.webkitFullscreenElement;
+        if (!el) return;
+        var fn = document.exitFullscreen || document.webkitExitFullscreen;
+        if (fn) { try { var p = fn.call(document); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    }
+
     function openLightbox(photo) {
         lbIndex = photoList().indexOf(photo);
         showLightbox();
         lb.hidden = false;
         lb.setAttribute('aria-hidden', 'false');
         document.body.classList.add('lb-open');
+        enterFullscreen();
     }
 
     function showLightbox() {
@@ -239,11 +258,17 @@
     }
 
     function closeLightbox() {
+        exitFullscreen();
         lb.hidden = true;
         lb.setAttribute('aria-hidden', 'true');
         lbImg.removeAttribute('src');
         document.body.classList.remove('lb-open');
     }
+
+    // Closing fullscreen (e.g. system back/gesture) should close the lightbox.
+    document.addEventListener('fullscreenchange', function () {
+        if (!document.fullscreenElement && !lb.hidden) closeLightbox();
+    });
 
     function navLightbox(delta) {
         var photos = photoList();
