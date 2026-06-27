@@ -86,11 +86,13 @@
 
     /* ---------- responsive masonry (shortest-column placement) ---------- */
 
+    var MAX_COL = 5;               // cap so photos don't get too small on wide screens
+
     function columnCount() {
         var w = gallery.clientWidth;
         if (w < 480) return 2;
         if (w < 760) return 3;
-        return Math.max(4, Math.floor((w + GUTTER) / (TARGET_COL + GUTTER)));
+        return Math.min(MAX_COL, Math.max(4, Math.floor((w + GUTTER) / (TARGET_COL + GUTTER))));
     }
 
     function buildColumns() {
