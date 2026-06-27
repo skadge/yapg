@@ -25,6 +25,9 @@ html {
     -webkit-text-size-adjust: 100%;
     scrollbar-width: thin;
     scrollbar-color: #2c2c2e transparent;
+    /* also on the root so the empty area below short content (which is the
+       html element, not body) doesn't allow pinch-zoom */
+    touch-action: pan-y;
 }
 
 body {
