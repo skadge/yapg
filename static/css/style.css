@@ -547,7 +547,7 @@ body.lb-open { overflow: hidden; }
 .lb-caption a { color: var(--accent); text-decoration: underline; }
 
 .lb-close, .lb-prev, .lb-next {
-    position: fixed;
+    position: absolute;   /* relative to #lightbox (the fullscreen element) */
     background: rgba(255, 255, 255, 0.08);
     color: #fff;
     border: 1px solid var(--hairline);
@@ -584,7 +584,7 @@ body.lb-open { overflow: hidden; }
 .lb-next { right: calc(12px + env(safe-area-inset-right, 0px)); }
 
 .lb-download {
-    position: fixed;
+    position: absolute;   /* relative to #lightbox, the fullscreen element */
     /* keep clear of the iOS home indicator / Android gesture bar */
     bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     left: 50%;
