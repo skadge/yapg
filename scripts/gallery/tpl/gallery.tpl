@@ -271,6 +271,7 @@
         var photos = photoList();
         if (lbIndex < 0 || lbIndex >= photos.length) return;
         var photo = photos[lbIndex];
+        resetZoom();
         lbImg.src = photo.getAttribute('data-large');
         var caption = photo.getAttribute('data-caption');
         lbCaption.innerHTML = caption || '';
@@ -280,6 +281,7 @@
 
     function closeLightbox() {
         exitFullscreen();
+        resetZoom();
         lb.hidden = true;
         lb.setAttribute('aria-hidden', 'true');
         lbImg.removeAttribute('src');
@@ -313,15 +315,93 @@
         else if (e.key === 'ArrowRight') navLightbox(1);
     });
 
-    // touch swipe inside the lightbox
+    // touch swipe to navigate — only when the image isn't zoomed in
     var touchX = null;
-    lb.addEventListener('touchstart', function (e) { touchX = e.changedTouches[0].clientX; }, { passive: true });
+    lb.addEventListener('touchstart', function (e) {
+        touchX = (e.touches.length === 1 && lbScale <= 1.01) ? e.changedTouches[0].clientX : null;
+    }, { passive: true });
     lb.addEventListener('touchend', function (e) {
-        if (touchX === null) return;
+        if (touchX === null || lbScale > 1.01) { touchX = null; return; }
         var dx = e.changedTouches[0].clientX - touchX;
         if (Math.abs(dx) > 50) navLightbox(dx < 0 ? 1 : -1);
         touchX = null;
     }, { passive: true });
+
+    /* pinch / pan / double-tap zoom on the fullscreen image (page UI zoom is
+       disabled via touch-action; here we transform only the image) */
+
+    var lbScale = 1, lbTx = 0, lbTy = 0;
+    var zMode = null, zStartDist = 0, zStartScale = 1;
+    var zPanX = 0, zPanY = 0, zTx0 = 0, zTy0 = 0, zLastTap = 0;
+
+    function resetZoom() {
+        lbScale = 1; lbTx = 0; lbTy = 0; zMode = null;
+        lbImg.style.transition = '';
+        lbImg.style.transform = '';
+    }
+
+    function applyZoom() {
+        lbImg.style.transform =
+            'translate(' + lbTx + 'px,' + lbTy + 'px) scale(' + lbScale + ')';
+    }
+
+    function touchDist(t) {
+        var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    lbImg.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 2) {
+            zMode = 'pinch';
+            zStartDist = touchDist(e.touches);
+            zStartScale = lbScale;
+            lbImg.style.transition = 'none';
+            e.preventDefault();
+        } else if (e.touches.length === 1 && lbScale > 1.01) {
+            zMode = 'pan';
+            zPanX = e.touches[0].clientX; zPanY = e.touches[0].clientY;
+            zTx0 = lbTx; zTy0 = lbTy;
+            lbImg.style.transition = 'none';
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    lbImg.addEventListener('touchmove', function (e) {
+        if (zMode === 'pinch' && e.touches.length === 2) {
+            lbScale = Math.min(6, Math.max(1, zStartScale * touchDist(e.touches) / zStartDist));
+            applyZoom();
+            e.preventDefault();
+        } else if (zMode === 'pan' && e.touches.length === 1) {
+            lbTx = zTx0 + (e.touches[0].clientX - zPanX);
+            lbTy = zTy0 + (e.touches[0].clientY - zPanY);
+            applyZoom();
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    lbImg.addEventListener('touchend', function (e) {
+        lbImg.style.transition = '';
+        // double-tap toggles zoom
+        if (e.changedTouches.length === 1 && zMode === null) {
+            var now = Date.now();
+            if (now - zLastTap < 300) {
+                if (lbScale > 1.01) resetZoom();
+                else { lbScale = 2.5; applyZoom(); }
+                e.preventDefault();
+                zLastTap = 0;
+                return;
+            }
+            zLastTap = now;
+        }
+        if (lbScale <= 1.01) resetZoom();
+        if (e.touches.length === 0) {
+            zMode = null;
+        } else if (e.touches.length === 1 && lbScale > 1.01) {
+            zMode = 'pan';            // released to one finger -> keep panning
+            zPanX = e.touches[0].clientX; zPanY = e.touches[0].clientY;
+            zTx0 = lbTx; zTy0 = lbTy;
+        }
+    }, { passive: false });
 
     /* ---------- editing ---------- */
 

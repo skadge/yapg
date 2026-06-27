@@ -35,6 +35,7 @@ body {
     background-color: var(--bg);
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    touch-action: pan-y;   /* allow scrolling, disable pinch-zoom of the UI */
 }
 
 img { max-width: 100%; }
@@ -525,6 +526,11 @@ body.lb-open { overflow: hidden; }
     border-radius: 4px;
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
     animation: lb-zoom 0.3s var(--ease);
+    /* gestures handled in JS so we can zoom the image without zooming the page */
+    touch-action: none;
+    transform-origin: center center;
+    transition: transform 0.25s var(--ease);
+    will-change: transform;
 }
 
 .lb-caption {
