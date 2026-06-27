@@ -137,7 +137,7 @@ class GuakamoleImage:
         logger.info("...creating small version of %s" % (self.name))
 
         # rely on _make_thumb to rotate the image if necessary
-        self.img.thumbnail(SMALL_SIZE, Image.ANTIALIAS)
+        self.img.thumbnail(SMALL_SIZE)
         self.img.save(self.abssmall)
 
 
@@ -171,13 +171,13 @@ class GuakamoleImage:
 
         if width > height:
             size = random.choice(THUMBS_SIZE_HORZ)
-            img.thumbnail((size[0], size[0]), Image.ANTIALIAS)
+            img.thumbnail((size[0], size[0]))
             width, height = img.size
             box = (0, int((height - size[1]) / 2),
                    width, int((height + size[1]) / 2) )
         else:
             size = random.choice(THUMBS_SIZE_VERT)
-            img.thumbnail((size[1], size[1]), Image.ANTIALIAS)
+            img.thumbnail((size[1], size[1]))
             width, height = img.size
             box = (int((width - size[0]) / 2), 0,
                    int((width + size[0]) / 2), height)
