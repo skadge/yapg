@@ -588,6 +588,9 @@ body.lb-open { overflow: hidden; }
     bottom: 18px;
     left: 50%;
     transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
     padding: 9px 18px;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--hairline);
@@ -596,10 +599,12 @@ body.lb-open { overflow: hidden; }
     font-size: 14px;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, opacity 0.2s ease;
     z-index: 101;
 }
 .lb-download:hover { background: var(--accent-soft); border-color: var(--accent-dim); }
+.lb-download.busy { opacity: 0.6; pointer-events: none; }
+.lb-download svg { display: block; }
 
 @keyframes lb-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes lb-zoom { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
