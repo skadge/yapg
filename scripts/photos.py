@@ -153,5 +153,5 @@ def app(environ, start_response):
         return make_gallery(path, options)
 
 logger.info("Starting to serve...")
-WSGIServer(app, bindAddress = ("127.0.0.1", 8080)).run()
+WSGIServer(app, bindAddress = ("127.0.0.1", 8083)).run()
 logger.info("Bye bye.")
