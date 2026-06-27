@@ -23,6 +23,11 @@ Type=simple
 Environment=LANG=C.UTF-8
 Environment=PYTHONUTF8=1
 
+# Credentials for edit mode (/edit). Leave unset to disable editing entirely.
+# Use a strong password and only ever expose /edit over HTTPS.
+#Environment=YAPG_EDIT_USER=admin
+#Environment=YAPG_EDIT_PASSWORD=change-me
+
 # The user/group running the gallery. It needs write access to
 # static/media (thumbnails and .votes.json are generated there).
 User=guakamole

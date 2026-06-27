@@ -80,3 +80,26 @@ Photo voting can be enabled per gallery by creating (touching) an empty `.vote` 
 A small, clickable star appears next to each image. Visitors can use it to
 'favourite' one image. The vote tally per image is stored server-side in a file
 called `.votes.json`, one file per directory.
+
+Editing
+-------
+
+A `/edit` route mirrors the public gallery but lets you manage it: upload new
+pictures, delete existing ones, edit captions and create subfolders. Browse to
+`/edit` (or `/edit/<some/gallery>`) to enter edit mode.
+
+It is gated behind HTTP Basic auth, with credentials taken from the
+environment. Edit mode is **disabled** unless both are set:
+
+```
+export YAPG_EDIT_USER=admin
+export YAPG_EDIT_PASSWORD=a-strong-password
+```
+
+(with systemd, set these via `Environment=` in the unit -- see
+[`deploy/yapg.service`](deploy/yapg.service)).
+
+Because Basic auth sends the password with every request, **only ever expose
+`/edit` over HTTPS**. Editing a caption simply renames the file using the
+`@caption` convention described above, so captions survive a switch back to
+read-only mode.

@@ -175,6 +175,81 @@ a {
     .downloadlink, .favorite { opacity: 1; }
 }
 
+/* ---------- edit mode ---------- */
+
+.edit-badge {
+    font-size: 0.5em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #000;
+    background: #fc0;
+    padding: 2px 8px;
+    border-radius: 10px;
+    vertical-align: middle;
+}
+
+#edit-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 4px 8px;
+    background: #111;
+    border-radius: 8px;
+}
+
+.edit-btn {
+    display: inline-block;
+    background: #1d6f42;
+    color: #fff;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    cursor: pointer;
+}
+.edit-btn:hover { background: #2a9159; }
+
+.edit-newfolder { display: inline-flex; gap: 6px; }
+
+#newfolder-name {
+    background: #000;
+    color: #eee;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font: inherit;
+}
+
+#edit-status { color: #aaa; font-size: 13px; }
+
+.edit-controls {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+}
+
+.edit-controls button {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+.edit-controls button:hover { background: rgba(0, 0, 0, 0.8); }
+
+/* in edit mode the download/favorite overlays only add noise */
+body.edit-mode .downloadlink,
+body.edit-mode .favorite { display: none; }
+
 /* ---------- spinner ---------- */
 
 #spinner {

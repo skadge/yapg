@@ -9,13 +9,15 @@
     <title>Guakamole : Fotos Y Takos</title>
 </head>
 
-<body>
+<body{% if edit %} class="edit-mode"{% endif %}>
+{% set prefix = '/edit' if edit else '' %}
 <header id="header">
-    <h1><a href="/" aria-label="Retour à la page d'accueil"><img alt="Accueil" src="/images/maison.svg" /></a>
+    <h1><a href="{{ prefix if prefix else '/' }}" aria-label="Retour à la page d'accueil"><img alt="Accueil" src="/images/maison.svg" /></a>
     {% for part in title[0] %}
-    <span class="sep">&rsaquo;</span> <a href="{{ "/" + part }}">{{part.split("/")[-1]}}</a>
+    <span class="sep">&rsaquo;</span> <a href="{{ prefix + "/" + part }}">{{part.split("/")[-1]}}</a>
     {% endfor %}
     <span class="sep">&rsaquo;</span> {{title[1]}}
+    {% if edit %}<span class="edit-badge">édition</span>{% endif %}
     </h1>
 </header>
 
@@ -26,12 +28,24 @@
 {% if dirs %}
 <nav id="directories">
     {% for d in dirs %}
-    <a href="{{ d[1] }}">{{ d[0] }}</a>
+    <a href="{{ prefix + d[1] }}">{{ d[0] }}</a>
     {% endfor %}
 </nav>
 {% endif %}
 
-{% if hasimgs %}
+{% if edit %}
+<div id="edit-toolbar">
+    <label class="edit-btn" for="upload-input">➕ Ajouter des photos</label>
+    <input id="upload-input" type="file" accept="image/jpeg,image/png" multiple hidden />
+    <span class="edit-newfolder">
+        <input id="newfolder-name" type="text" placeholder="Nom du dossier" />
+        <button id="newfolder-btn" class="edit-btn" type="button">📁 Créer</button>
+    </span>
+    <span id="edit-status" role="status"></span>
+</div>
+{% endif %}
+
+{% if hasimgs or edit %}
 <div id="gallery"></div>
 <div id="spinner" hidden></div>
 
@@ -51,8 +65,11 @@
 (function () {
     "use strict";
 
-    var PATH = {{ path|tojson }};
+    // Base URL for AJAX calls: the current path, so edit mode (/edit/...)
+    // keeps routing through the authenticated prefix.
+    var BASE = window.location.pathname;
     var VOTE = {{ (vote or false)|tojson }};
+    var EDIT = {{ (edit or false)|tojson }};
     var BATCH = 20;
     var GUTTER = 8;
     var TARGET_COL = 240;          // desired column width (px) on large screens
@@ -115,7 +132,7 @@
     function getMore() {
         loading = true;
         spinner.hidden = false;
-        fetch(PATH + '?action=getimages&from=' + counter + '&nb=' + BATCH)
+        fetch(BASE + '?action=getimages&from=' + counter + '&nb=' + BATCH)
             .then(function (r) { return r.text(); })
             .then(function (html) {
                 if (!html.trim()) {
@@ -181,7 +198,7 @@
         var action = selected ? 'favorite' : 'unfavorite';
         if (selected) localStorage.setItem(favKey(name), '1');
         else localStorage.removeItem(favKey(name));
-        fetch(PATH + '?action=' + action + '&img=' + encodeURIComponent(name));
+        fetch(BASE + '?action=' + action + '&img=' + encodeURIComponent(name));
     }
 
     /* ---------- lightbox ---------- */
@@ -254,9 +271,104 @@
         touchX = null;
     }, { passive: true });
 
+    /* ---------- editing ---------- */
+
+    function editPost(query, body, contentType) {
+        var opts = { method: 'POST', headers: { 'X-YAPG-Edit': '1' } };
+        if (body !== undefined) {
+            opts.body = body;
+            opts.headers['Content-Type'] = contentType || 'application/octet-stream';
+        }
+        return fetch(BASE + query, opts).then(function (r) { return r.json(); });
+    }
+
+    function setStatus(msg) {
+        var el = document.getElementById('edit-status');
+        if (el) el.textContent = msg || '';
+    }
+
+    function rawCaption(photo) {
+        var name = photo.getAttribute('data-name') || '';
+        if (name.charAt(0) !== '@') return '';
+        var dot = name.lastIndexOf('.');
+        var base = dot > 0 ? name.slice(1, dot) : name.slice(1);
+        return base.replace(/\|/g, '/');
+    }
+
+    function uploadFiles(files) {
+        if (!files.length) return;
+        var done = 0, failed = 0;
+        function next(i) {
+            if (i >= files.length) {
+                if (failed) setStatus(failed + ' échec(s) sur ' + files.length);
+                window.location.reload();
+                return;
+            }
+            var f = files[i];
+            setStatus('Envoi ' + (i + 1) + '/' + files.length + ' : ' + f.name);
+            editPost('?action=upload&name=' + encodeURIComponent(f.name),
+                     f, f.type || 'application/octet-stream')
+                .then(function (res) { if (!res.ok) failed++; })
+                .catch(function () { failed++; })
+                .then(function () { done++; next(i + 1); });
+        }
+        next(0);
+    }
+
+    function deletePhoto(photo) {
+        var name = photo.getAttribute('data-name');
+        if (!window.confirm('Supprimer cette photo ?\n' + name)) return;
+        editPost('?action=delete&img=' + encodeURIComponent(name))
+            .then(function (res) {
+                if (res.ok) window.location.reload();
+                else setStatus('Suppression impossible : ' + (res.msg || ''));
+            });
+    }
+
+    function editCaption(photo) {
+        var name = photo.getAttribute('data-name');
+        var current = rawCaption(photo);
+        var caption = window.prompt('Légende (vide pour supprimer) :', current);
+        if (caption === null) return;
+        editPost('?action=setcaption&img=' + encodeURIComponent(name) +
+                 '&caption=' + encodeURIComponent(caption))
+            .then(function (res) {
+                if (res.ok) window.location.reload();
+                else setStatus('Légende non modifiée : ' + (res.msg || ''));
+            });
+    }
+
+    if (EDIT) {
+        var uploadInput = document.getElementById('upload-input');
+        if (uploadInput) {
+            uploadInput.addEventListener('change', function () {
+                uploadFiles(Array.prototype.slice.call(this.files));
+            });
+        }
+        var newFolderBtn = document.getElementById('newfolder-btn');
+        var newFolderName = document.getElementById('newfolder-name');
+        if (newFolderBtn) {
+            newFolderBtn.addEventListener('click', function () {
+                var name = (newFolderName.value || '').trim();
+                if (!name) return;
+                editPost('?action=mkdir&name=' + encodeURIComponent(name))
+                    .then(function (res) {
+                        if (res.ok) window.location.reload();
+                        else setStatus('Dossier non créé : ' + (res.msg || ''));
+                    });
+            });
+        }
+    }
+
     /* ---------- delegated clicks on the gallery ---------- */
 
     gallery.addEventListener('click', function (e) {
+        if (EDIT) {
+            var del = e.target.closest('.edit-delete');
+            if (del) { e.preventDefault(); deletePhoto(del.closest('.photo')); return; }
+            var cap = e.target.closest('.edit-caption');
+            if (cap) { e.preventDefault(); editCaption(cap.closest('.photo')); return; }
+        }
         var fav = e.target.closest('.favorite');
         if (fav) { e.preventDefault(); toggleFavorite(fav.closest('.photo')); return; }
         if (e.target.closest('.downloadlink')) return; // let the download happen

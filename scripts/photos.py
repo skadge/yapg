@@ -13,6 +13,7 @@ from jinja2 import Environment, PackageLoader
 import json
 
 from gallery.image_processing import *
+from gallery import edit
 
 MEDIA_BASE = u'media/'
 
@@ -31,7 +32,15 @@ items_tpl = env.get_template('photo_items.tpl')
 def fixencoding(s):
     return s.encode("utf-8")
 
-def make_gallery(path, options):
+def safe_gallery_path(path):
+    """Confine a requested gallery path to the photos root.
+
+    Anchoring with a leading '/' before normpath() collapses any '..' that
+    would climb above the root, so the result always stays within
+    media/photos/ (e.g. '/../../etc' becomes '/etc')."""
+    return os.path.normpath('/' + path.lstrip('/'))
+
+def make_gallery(path, options, edit_mode=False):
 
     content = ""
     fullpath= PHOTOS_BASE + path
@@ -44,7 +53,7 @@ def make_gallery(path, options):
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Bad path! %s"%path)
         logger.error(str(e))
-        return map(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None))
+        return map(fixencoding, tpl.generate(title=title, path=path, badpath=True, dirs=None, hasimgs=False, recents=None, edit=edit_mode))
 
     if (fullpath not in visited_path) or visited_path[fullpath] != checksum:
         create_thumbnails(fullpath, to = MEDIA_BASE)
@@ -85,7 +94,7 @@ def make_gallery(path, options):
             end = len(imgs)
 
         logger.info("Sending %d images" % (end - start))
-        return map(fixencoding, items_tpl.generate(imgs = imgs[start:end], vote=vote_enabled))
+        return map(fixencoding, items_tpl.generate(imgs = imgs[start:end], vote=vote_enabled, edit=edit_mode))
 
     else:
 
@@ -97,13 +106,14 @@ def make_gallery(path, options):
         title = (["/".join(paths[0:i+1]) for i in range(len(paths))], path.split("/")[-1])
         logger.info("Sending base gallery")
         return map(fixencoding, tpl.generate(title=title,
-                                              path=path, 
-                                              dirs=dirs, 
-                                              hasimgs=(len(imgs) > 0), 
-                                              imgs=imgs[start:end], 
-                                              recents=recents, 
+                                              path=path,
+                                              dirs=dirs,
+                                              hasimgs=(len(imgs) > 0),
+                                              imgs=imgs[start:end],
+                                              recents=recents,
                                               vote=vote_enabled,
-                                              counter=end))
+                                              counter=end,
+                                              edit=edit_mode))
 
 
 def save_votes(path):
@@ -133,25 +143,77 @@ def toggle_favorite(action, path, options):
     save_votes(path)
 
 
+HTML_HEADERS = [('Content-Type', 'text/html; charset=utf-8')]
+
+EDIT_ACTIONS = ("upload", "delete", "setcaption", "mkdir")
+
+
+def handle_edit_action(action, path, options, environ, start_response):
+    """Perform a write operation and return a small JSON status."""
+
+    # Only same-origin requests issued by our own JS carry this header; it
+    # cannot be set by a cross-site form, which gives us simple CSRF protection.
+    if environ.get("HTTP_X_YAPG_EDIT") != "1" or environ.get("REQUEST_METHOD") != "POST":
+        start_response('400 Bad Request', [('Content-Type', 'application/json; charset=utf-8')])
+        return [b'{"ok": false, "msg": "Bad request"}']
+
+    if action == "upload":
+        length = int(environ.get("CONTENT_LENGTH") or 0)
+        ok, msg = edit.upload(path, options.get("name", [""])[0],
+                              environ["wsgi.input"], length)
+    elif action == "delete":
+        ok, msg = edit.delete(path, options.get("img", [""])[0])
+    elif action == "setcaption":
+        ok, msg = edit.set_caption(path, options.get("img", [""])[0],
+                                   options.get("caption", [""])[0])
+    elif action == "mkdir":
+        ok, msg = edit.make_subdir(path, options.get("name", [""])[0])
+    else:
+        ok, msg = False, "Unknown action"
+
+    status = '200 OK' if ok else '400 Bad Request'
+    start_response(status, [('Content-Type', 'application/json; charset=utf-8')])
+    return [json.dumps({"ok": ok, "msg": msg}).encode("utf-8")]
+
+
 def app(environ, start_response):
 
     logger.info("Incoming request!")
-    start_response('200 OK', [('Content-Type', 'text/html')])
 
     # PEP 3333: PATH_INFO is a native string decoded from the raw bytes via
     # latin-1; re-encode to recover the original UTF-8 (accented gallery names).
-    path = environ["PATH_INFO"].encode('latin-1').decode('utf_8')
+    raw_path = environ["PATH_INFO"].encode('latin-1').decode('utf_8')
 
     options = parse_qs(environ["QUERY_STRING"])
-
     action = options.get("action", ["getimages"])[0]
-
     logger.info("Got request with action <%s>" % action)
+
+    # ---- edit mode (gated behind HTTP Basic auth) --------------------------
+    edit_mode = raw_path == "/edit" or raw_path.startswith("/edit/")
+    if edit_mode:
+        if not edit.edit_enabled():
+            start_response('404 Not Found', HTML_HEADERS)
+            return [b"Edit mode is disabled. Set YAPG_EDIT_USER and "
+                    b"YAPG_EDIT_PASSWORD to enable it."]
+        if not edit.check_auth(environ):
+            start_response('401 Unauthorized', HTML_HEADERS + [
+                ('WWW-Authenticate', 'Basic realm="YAPG edit", charset="UTF-8"')])
+            return [b"Authentication required."]
+
+        path = safe_gallery_path(raw_path[len("/edit"):])
+        if action in EDIT_ACTIONS:
+            return handle_edit_action(action, path, options, environ, start_response)
+        start_response('200 OK', HTML_HEADERS)
+        return make_gallery(path, options, edit_mode=True)
+
+    # ---- normal (read-only) mode -------------------------------------------
+    path = safe_gallery_path(raw_path)
     if action in ["favorite", "unfavorite"]:
         toggle_favorite(action, path, options)
+        start_response('200 OK', HTML_HEADERS)
         return ""
-    else:
-        return make_gallery(path, options)
+    start_response('200 OK', HTML_HEADERS)
+    return make_gallery(path, options)
 
 if __name__ == "__main__":
     # Lightweight development server. In production, serve `photos:app` with

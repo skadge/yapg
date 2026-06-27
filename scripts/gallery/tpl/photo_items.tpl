@@ -8,5 +8,11 @@
     {% if vote %}
     <button type="button" class="favorite" title="Photo chouette" id="fav_{{ img.name }}" aria-label="Mettre en favori">&nbsp;</button>
     {% endif %}
+    {% if edit %}
+    <div class="edit-controls">
+        <button type="button" class="edit-caption" title="Modifier la légende" aria-label="Modifier la légende">✏️</button>
+        <button type="button" class="edit-delete" title="Supprimer" aria-label="Supprimer">🗑️</button>
+    </div>
+    {% endif %}
 </figure>
 {% endfor %}

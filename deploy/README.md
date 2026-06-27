@@ -34,6 +34,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now yapg.service
 ```
 
+To enable the `/edit` management UI, uncomment and set `YAPG_EDIT_USER` /
+`YAPG_EDIT_PASSWORD` in the unit (edit mode stays disabled while they are
+unset). Only expose `/edit` over HTTPS -- the nginx sample already redirects
+HTTP to HTTPS.
+
 The backend now listens on `127.0.0.1:8083`. Useful commands:
 
 ```
