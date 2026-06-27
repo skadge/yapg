@@ -25,8 +25,8 @@ Environment=PYTHONUTF8=1
 
 # The user/group running the gallery. It needs write access to
 # static/media (thumbnails and .votes.json are generated there).
-User=www-data
-Group=www-data
+User=guakamole
+Group=guakamole
 
 # Root of the checkout. gunicorn --chdir then enters scripts/ so that the
 # `photos` module and `gallery` package are importable.
