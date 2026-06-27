@@ -1,0 +1,48 @@
+# systemd unit for the YAPG (Yet Another Photo Gallery) backend.
+#
+# Install:
+#   sudo cp deploy/yapg.service /etc/systemd/system/yapg.service
+#   # edit the paths/User below to match your setup, then:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now yapg.service
+#
+# Check it:
+#   systemctl status yapg.service
+#   journalctl -u yapg.service -f
+
+[Unit]
+Description=YAPG - Yet Another Photo Gallery (gunicorn backend)
+After=network.target
+
+[Service]
+Type=simple
+
+# The user/group running the gallery. It needs write access to
+# static/media (thumbnails and .votes.json are generated there).
+User=www-data
+Group=www-data
+
+# Root of the checkout. gunicorn --chdir then enters scripts/ so that the
+# `photos` module and `gallery` package are importable.
+WorkingDirectory=/var/www/photos
+ExecStart=/var/www/photos/.venv/bin/gunicorn \
+    --chdir scripts \
+    --workers 1 \
+    --timeout 120 \
+    --bind 127.0.0.1:8083 \
+    photos:app
+
+# A single worker is required: the gallery keeps its thumbnail and vote
+# caches in memory, which would desync across multiple workers.
+
+Restart=on-failure
+RestartSec=5
+
+# Basic hardening (relax if it gets in the way).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

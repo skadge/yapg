@@ -31,7 +31,8 @@ pip install -r requirements.txt
 .venv/bin/gunicorn --chdir scripts --workers 1 --timeout 120 \
                    --bind 127.0.0.1:8083 photos:app
 ```
-  (you might want to run that in a `screen`/`systemd` unit to keep it alive).
+  (you might want to run that in a `screen`/`systemd` unit to keep it alive --
+  see [`deploy/`](deploy/) for a ready-made systemd unit and nginx config).
   For quick local hacking you can also run the bundled development server:
   `python3 scripts/photos.py` (listens on `127.0.0.1:8083`, override with `PORT`).
 - I use the following configuration for nginx, proxying to gunicorn:
