@@ -1,12 +1,12 @@
-    {% for img in imgs %}
-    <div class="photo">
-        <a href="/{{ img.small }}" rel="lightbox[page]">
-            <img title="{{ "%s - %s" % (img.name[:-4], img.date) }}" src="/{{ img.thumb }}" />
-	<div class="photo-caption">{{ img.caption }}</div>
-        <a class="downloadlink" title="Télécharger la photo originale" href="/{{ img.path }}" download>&nbsp;</a>
-        {% if vote %}
-        <a class="favorite" title="Photo chouette" id="fav_{{ img.name }}" onclick="toggle_favorite($(this),'{{ img.name }}');return false;" href="#">&nbsp;</a>
-        {% endif %}
-        </a>
-    </div>
-    {% endfor %}
+{% for img in imgs %}
+<figure class="photo" data-w="{{ img.thumb_w }}" data-h="{{ img.thumb_h }}"
+        data-large="/{{ img.small }}" data-original="/{{ img.path }}"
+        data-name="{{ img.name|e }}"{% if img.caption %} data-caption="{{ img.caption|e }}"{% endif %}>
+    <img loading="lazy" src="/{{ img.thumb }}" alt="{{ img.name[:-4]|e }}" title="{{ "%s - %s" % (img.name[:-4], img.date) }}" />
+    {% if img.caption %}<figcaption class="photo-caption">{{ img.caption }}</figcaption>{% endif %}
+    <a class="downloadlink" title="Télécharger la photo originale" href="/{{ img.path }}" download aria-label="Télécharger l'original">&nbsp;</a>
+    {% if vote %}
+    <button type="button" class="favorite" title="Photo chouette" id="fav_{{ img.name }}" aria-label="Mettre en favori">&nbsp;</button>
+    {% endif %}
+</figure>
+{% endfor %}

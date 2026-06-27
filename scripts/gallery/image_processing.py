@@ -83,6 +83,15 @@ class GuakamoleImage:
         self._make_thumb() # Attention! modifies self.img -> EXIF rotate
         self._make_small() # Attention! modifies self.img!
 
+        # record the thumbnail dimensions so the client can lay out the
+        # gallery (aspect-ratio based masonry) without any layout shift
+        self.thumb_w, self.thumb_h = 1, 1
+        try:
+            with Image.open(self.absthumb) as _thumb:
+                self.thumb_w, self.thumb_h = _thumb.size
+        except OSError as e:
+            logger.error("Could not read thumbnail size for %s: %s" % (self.absthumb, e))
+
         self.img = None # release memory!
 
     # comparing on thumbs name to get the creation date in!
