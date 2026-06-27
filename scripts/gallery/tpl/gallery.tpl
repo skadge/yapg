@@ -178,7 +178,11 @@
     window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function () {
-            buildColumns();
+            // Only rebuild when the column count actually changes. Mobile
+            // browsers fire 'resize' on scroll (the address bar shows/hides,
+            // changing the viewport height); rebuilding then would reshuffle
+            // the columns and jump back to the top.
+            if (columnCount() !== columns.length) buildColumns();
             maybeLoadMore();
         }, 150);
     });
