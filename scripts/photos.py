@@ -65,6 +65,7 @@ def make_gallery(path, options, edit_mode=False):
     logger.info("Building gallery with pictures %d to %d in %s" % (start, end, fullpath))
 
     imgs = list_images(fullpath)
+    imgs = apply_manual_order(fullpath, imgs)
 
     vote_enabled = False
     vote_path = absolute_media_path(os.path.normpath(os.path.join(fullpath, ".vote")))
@@ -116,6 +117,30 @@ def make_gallery(path, options, edit_mode=False):
                                               edit=edit_mode))
 
 
+def load_order(fullpath):
+    """Return the manual ordering (list of filenames) from .order.json, or None."""
+    order_json = absolute_media_path(os.path.normpath(os.path.join(fullpath, ".order.json")))
+    if os.path.exists(order_json):
+        try:
+            with open(order_json, "r") as f:
+                return json.load(f)
+        except (OSError, ValueError) as e:
+            logger.error("Could not read %s: %s" % (order_json, e))
+    return None
+
+
+def apply_manual_order(fullpath, imgs):
+    """Reorder `imgs` (already date-sorted) according to .order.json: listed
+    files first in that order, any remaining files after them by date."""
+    order = load_order(fullpath)
+    if not order:
+        return imgs
+    rank = {name: i for i, name in enumerate(order)}
+    listed = sorted((im for im in imgs if im.name in rank), key=lambda im: rank[im.name])
+    rest = [im for im in imgs if im.name not in rank]
+    return listed + rest
+
+
 def save_votes(path):
     fullpath= PHOTOS_BASE + path
     votes_json = absolute_media_path(os.path.normpath(os.path.join(fullpath, ".votes.json")))
@@ -145,7 +170,7 @@ def toggle_favorite(action, path, options):
 
 HTML_HEADERS = [('Content-Type', 'text/html; charset=utf-8')]
 
-EDIT_ACTIONS = ("upload", "delete", "setcaption", "mkdir")
+EDIT_ACTIONS = ("upload", "delete", "setcaption", "mkdir", "reorder")
 
 
 def handle_edit_action(action, path, options, environ, start_response):
@@ -168,6 +193,14 @@ def handle_edit_action(action, path, options, environ, start_response):
                                    options.get("caption", [""])[0])
     elif action == "mkdir":
         ok, msg = edit.make_subdir(path, options.get("name", [""])[0])
+    elif action == "reorder":
+        length = int(environ.get("CONTENT_LENGTH") or 0)
+        raw = environ["wsgi.input"].read(length) if length > 0 else b""
+        try:
+            names = json.loads(raw.decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            names = None
+        ok, msg = edit.reorder(path, names)
     else:
         ok, msg = False, "Unknown action"
 

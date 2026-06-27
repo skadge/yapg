@@ -43,7 +43,20 @@
         <input id="newfolder-name" type="text" placeholder="Nom du dossier" />
         <button id="newfolder-btn" class="edit-btn" type="button">📁 Créer</button>
     </span>
+    <button id="reorder-btn" class="edit-btn" type="button">↕️ Réorganiser</button>
     <span id="edit-status" role="status"></span>
+</div>
+
+<div id="reorder" hidden>
+    <div class="reorder-bar">
+        <strong>Réorganiser la galerie</strong>
+        <span id="reorder-status" class="reorder-status"></span>
+        <span class="reorder-actions">
+            <button id="reorder-cancel" type="button">Annuler</button>
+            <button id="reorder-save" class="edit-btn" type="button">Enregistrer l'ordre</button>
+        </span>
+    </div>
+    <ul id="reorder-list"></ul>
 </div>
 {% endif %}
 
@@ -385,6 +398,103 @@
             });
     }
 
+    /* ---------- reorder ---------- */
+
+    var reorderPanel = document.getElementById('reorder');
+
+    function setReorderStatus(msg) {
+        var el = document.getElementById('reorder-status');
+        if (el) el.textContent = msg || '';
+    }
+
+    function reorderLabel(photo) {
+        return rawCaption(photo) || photo.getAttribute('data-name');
+    }
+
+    function openReorder() {
+        var list = document.getElementById('reorder-list');
+        list.textContent = '';
+        setReorderStatus('Chargement…');
+        reorderPanel.hidden = false;
+        // load the full list (independent of how far the gallery has scrolled)
+        fetch(BASE + '?action=getimages&from=0&nb=100000')
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+                var tmp = document.createElement('div');
+                tmp.innerHTML = html;
+                var photos = Array.prototype.slice.call(tmp.querySelectorAll('.photo'));
+                photos.forEach(function (p) {
+                    var li = document.createElement('li');
+                    li.className = 'reorder-item';
+                    li.setAttribute('data-name', p.getAttribute('data-name'));
+
+                    var handle = document.createElement('span');
+                    handle.className = 'reorder-handle';
+                    handle.textContent = '☰';
+
+                    var img = document.createElement('img');
+                    img.src = p.querySelector('img').getAttribute('src');
+                    img.loading = 'lazy';
+
+                    var label = document.createElement('span');
+                    label.className = 'reorder-label';
+                    label.textContent = reorderLabel(p);
+
+                    li.appendChild(handle);
+                    li.appendChild(img);
+                    li.appendChild(label);
+                    list.appendChild(li);
+                });
+                setReorderStatus(photos.length + ' photos — glissez la poignée pour réordonner');
+            })
+            .catch(function () { setReorderStatus('Erreur de chargement'); });
+    }
+
+    function closeReorder() { reorderPanel.hidden = true; }
+
+    function saveOrder() {
+        var names = Array.prototype.map.call(
+            document.querySelectorAll('#reorder-list .reorder-item'),
+            function (li) { return li.getAttribute('data-name'); });
+        setReorderStatus('Enregistrement…');
+        editPost('?action=reorder', JSON.stringify(names), 'application/json')
+            .then(function (res) {
+                if (res.ok) window.location.reload();
+                else setReorderStatus('Échec : ' + (res.msg || ''));
+            });
+    }
+
+    function makeSortable(listEl) {
+        var dragging = null;
+        listEl.addEventListener('pointerdown', function (e) {
+            var handle = e.target.closest('.reorder-handle');
+            if (!handle) return;
+            dragging = handle.closest('.reorder-item');
+            if (!dragging) return;
+            e.preventDefault();
+            dragging.classList.add('dragging');
+            listEl.setPointerCapture(e.pointerId);
+        });
+        listEl.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            e.preventDefault();
+            var others = Array.prototype.slice.call(
+                listEl.querySelectorAll('.reorder-item:not(.dragging)'));
+            var before = null;
+            for (var i = 0; i < others.length; i++) {
+                var r = others[i].getBoundingClientRect();
+                if (e.clientY < r.top + r.height / 2) { before = others[i]; break; }
+            }
+            if (before) listEl.insertBefore(dragging, before);
+            else listEl.appendChild(dragging);
+        });
+        function endDrag() {
+            if (dragging) { dragging.classList.remove('dragging'); dragging = null; }
+        }
+        listEl.addEventListener('pointerup', endDrag);
+        listEl.addEventListener('pointercancel', endDrag);
+    }
+
     if (EDIT) {
         var uploadInput = document.getElementById('upload-input');
         if (uploadInput) {
@@ -405,6 +515,13 @@
                     });
             });
         }
+        var reorderBtn = document.getElementById('reorder-btn');
+        if (reorderBtn) reorderBtn.addEventListener('click', openReorder);
+        var reorderCancel = document.getElementById('reorder-cancel');
+        if (reorderCancel) reorderCancel.addEventListener('click', closeReorder);
+        var reorderSave = document.getElementById('reorder-save');
+        if (reorderSave) reorderSave.addEventListener('click', saveOrder);
+        if (reorderPanel) makeSortable(document.getElementById('reorder-list'));
     }
 
     /* ---------- delegated clicks on the gallery ---------- */

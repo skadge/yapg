@@ -14,6 +14,7 @@ import logging; logger = logging.getLogger("main")
 import os
 import glob
 import hmac
+import json
 import base64
 
 from .image_processing import (STATIC_ROOT, EXTENSIONS, THUMBS_DIR, SMALL_DIR,
@@ -225,6 +226,38 @@ def make_subdir(path, name):
         return False, "Could not create folder"
     logger.info("Created folder %s", target)
     return True, name
+
+
+def reorder(path, names):
+    """Persist a manual image order for the gallery into .order.json.
+
+    `names` is the desired ordered list of filenames; entries that are not
+    existing image files in this gallery are dropped, and duplicates ignored."""
+    directory = gallery_dir(path)
+    if directory is None:
+        return False, "Invalid gallery"
+    if not isinstance(names, list):
+        return False, "Invalid order"
+
+    ordered, seen = [], set()
+    for name in names:
+        if not isinstance(name, str):
+            continue
+        child = _safe_child(directory, name)
+        base = os.path.basename(name)
+        if child and base not in seen and os.path.isfile(child) and _is_image(base):
+            ordered.append(base)
+            seen.add(base)
+
+    order_json = os.path.join(directory, ".order.json")
+    try:
+        with open(order_json, "w") as f:
+            json.dump(ordered, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        logger.error("Could not write %s: %s", order_json, e)
+        return False, "Could not save order"
+    logger.info("Saved manual order (%d items) for %s", len(ordered), path)
+    return True, "ordered"
 
 
 def _remove_derived(directory, name):

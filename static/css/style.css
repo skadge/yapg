@@ -272,6 +272,87 @@ a {
 body.edit-mode .downloadlink,
 body.edit-mode .favorite { display: none; }
 
+/* ---------- reorder panel ---------- */
+
+#reorder {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    background: #0c0c0c;
+}
+#reorder[hidden] { display: none; }
+
+.reorder-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #161616;
+    border-bottom: 1px solid #222;
+}
+.reorder-bar strong { color: #eee; }
+.reorder-status { color: #aaa; font-size: 13px; flex: 1 1 auto; }
+.reorder-actions { display: flex; gap: 8px; }
+.reorder-actions button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font: inherit;
+    cursor: pointer;
+}
+#reorder-cancel { background: #333; color: #eee; }
+
+#reorder-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.reorder-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 640px;
+    margin: 0 auto 6px;
+    padding: 6px 8px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    user-select: none;
+}
+.reorder-item.dragging {
+    opacity: 0.7;
+    background: #2a2a17;
+    box-shadow: 0 0 0 2px #fc0;
+}
+.reorder-handle {
+    flex: none;
+    padding: 0 6px;
+    color: #888;
+    font-size: 22px;
+    line-height: 1;
+    cursor: grab;
+    touch-action: none;   /* let the handle start a drag instead of scrolling */
+}
+.reorder-item img {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.reorder-label {
+    color: #ddd;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* ---------- spinner ---------- */
 
 #spinner {
