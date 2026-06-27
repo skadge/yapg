@@ -126,20 +126,53 @@ class GuakamoleImage:
     def __ge__(self, other):
         return self.date >= other.date
 
+    # EXIF date tags, in order of preference
+    EXIF_DATETIME_ORIGINAL = 36867   # when the photo was taken
+    EXIF_DATETIME_DIGITIZED = 36868  # when it was digitized
+    EXIF_DATETIME = 306              # last modified (main IFD)
+
+    def _exif_date(self):
+        """Capture date from EXIF as 'YYYY-MM-DD-HH-MM-SS', or None.
+
+        DateTimeOriginal/Digitized live in the Exif sub-IFD (0x8769); plain
+        DateTime is in the main IFD. We read them via the public getexif() API
+        and prefer the original capture time.
+        """
+        try:
+            exif = self.img.getexif()
+        except Exception as e:
+            logger.warning("Could not read EXIF from %s: %s" % (self.name, e))
+            return None
+        if not exif:
+            return None
+
+        try:
+            sub = exif.get_ifd(0x8769)
+        except Exception:
+            sub = {}
+
+        for value in (sub.get(self.EXIF_DATETIME_ORIGINAL),
+                      sub.get(self.EXIF_DATETIME_DIGITIZED),
+                      exif.get(self.EXIF_DATETIME)):
+            if value:
+                value = str(value).strip()
+                # EXIF dates look like '2018:07:15 08:30:00'; skip blank/zero ones
+                if value and not value.startswith("0000"):
+                    return value.replace(":", "-").replace(" ", "-")
+        return None
+
     def _date(self):
         """ returns the date of the picture, as a string suitable for inclusion in the file name.
 
-        Tries first EXIF. If not available, uses creation timestamp.
+        Tries first EXIF (DateTimeOriginal). If not available, falls back to the
+        file's modification time.
         """
+        date = self._exif_date()
+        if date:
+            return date
 
-        exif = self.img._getexif()
-        if exif and 36867 in exif: # exif -> DateTimeOriginal
-            return exif[36867].replace(":","-").replace(" ", "-")
-
-
-
-        logger.warning("No EXIF date. Using file creation date instead.")
-        return datetime.datetime.fromtimestamp(os.path.getctime(self.abspath)).strftime("%Y-%m-%d-%H-%M-%S")
+        logger.warning("No EXIF date for %s. Using file modification time instead." % self.name)
+        return datetime.datetime.fromtimestamp(os.path.getmtime(self.abspath)).strftime("%Y-%m-%d-%H-%M-%S")
 
 
     def _clear_old_thumbs(self):
