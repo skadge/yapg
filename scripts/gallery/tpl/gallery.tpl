@@ -36,7 +36,7 @@
 {% if edit %}
 <div id="edit-toolbar">
     <label class="edit-btn" for="upload-input">➕ Ajouter des photos</label>
-    <input id="upload-input" type="file" accept="image/jpeg,image/png" multiple hidden />
+    <input id="upload-input" type="file" accept="image/jpeg,image/png" multiple class="sr-only" />
     <span class="edit-newfolder">
         <input id="newfolder-name" type="text" placeholder="Nom du dossier" />
         <button id="newfolder-btn" class="edit-btn" type="button">📁 Créer</button>

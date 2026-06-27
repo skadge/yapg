@@ -195,6 +195,22 @@ a {
     vertical-align: middle;
 }
 
+/* Visually hidden but still present in layout, so the <label> can open the
+   file picker. A display:none file input (the `hidden` attribute) is ignored
+   by Firefox for Android. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 #edit-toolbar {
     display: flex;
     flex-wrap: wrap;
