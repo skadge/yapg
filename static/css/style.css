@@ -134,6 +134,12 @@ a {
 
 .photo-caption a { text-decoration: underline solid #888; }
 
+/* on small screens the captions eat too much room in the overview; they are
+   still shown in the lightbox */
+@media (max-width: 600px) {
+    .photo-caption { display: none; }
+}
+
 /* overlay action buttons */
 
 .downloadlink,
