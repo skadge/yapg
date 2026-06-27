@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Guakamole">
+  <!-- dark rounded tile -->
+  <rect width="32" height="32" rx="7" fill="#1b1f17"/>
+  <!-- viewfinder bump -->
+  <rect x="10.5" y="6.6" width="7" height="4.6" rx="1.4" fill="#7cc242"/>
+  <!-- camera body -->
+  <rect x="4" y="10" width="24" height="16" rx="3.2" fill="#7cc242"/>
+  <!-- flash -->
+  <circle cx="23.4" cy="13.7" r="1.25" fill="#eef4d8"/>
+  <!-- lens as an avocado cross-section: skin, flesh, pit -->
+  <circle cx="16" cy="18.4" r="6" fill="#4e8f2a"/>
+  <circle cx="16" cy="18.4" r="4.6" fill="#eef4d8"/>
+  <circle cx="16" cy="18.4" r="2.1" fill="#7a4a23"/>
+  <!-- highlight -->
+  <circle cx="14.3" cy="16.7" r="0.95" fill="#fff" opacity="0.85"/>
+</svg>
